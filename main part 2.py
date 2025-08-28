@@ -1,9 +1,14 @@
+## User class instead of namedtuple
+class User:
+    def __init__(self, name, UnitID, reward_points):
+        self.name = name
+        self.UnitID = UnitID
+        self.reward_points = reward_points
 
-from datetime import datetime
-from collections import namedtuple
+    def __repr__(self):
+        return f"User(name={self.name}, UnitID={self.UnitID}, reward_points={self.reward_points})"
 
 
-User = namedtuple("User", ["name", "UnitID", "reward_points"])
 apartment_rate_list = {"duck": 106.7, "goose": 145.2, "swan": 95.0}
 
 # Supplementary items
@@ -14,19 +19,17 @@ supplementary_items = {
     "extra_bed": {"price": 50, "desc": "Removable extra bed (per night, fits 2)"}
 }
 
-
 ## default profiles
+u1 = User("Alyssa", "U12swan", 20)
+u2 = User("Luigi", "U20goose", 50)
+u3 = User("Oliver", "U49goose", 45)
 
-u1 = User("Alyssa", "U12swan", 20),
-u2 = User("Luigi", "U20goose", 50),
-u3 =   User("Oliver", "U49goose", 45)
-
-
-profiles  = [u1,u2,u3]
+profiles = [u1, u2, u3]
 
 
 def make_booking():
-    now = datetime.now().strftime("%d/%m/%Y")
+    # Default booking date is "today" (no datetime now)
+    now = "today"
 
     # --- Guest name validation ---
     while True:
@@ -36,7 +39,7 @@ def make_booking():
         else:
             print(" Error: Guest name must contain only letters.")
 
-    # --- Number of guests --- validation ---
+    # --- Number of guests validation ---
     while True:
         try:
             n_guests = int(input("Enter the number of guests [eg : 6]:\n"))
@@ -44,7 +47,7 @@ def make_booking():
                 break
             else:
                 print(" Error: Number of guests must be greater than 0.")
-        except :
+        except:
             print(" Error: Please enter a valid integer.")
 
     # --- Apartment ID validation ---
@@ -66,7 +69,7 @@ def make_booking():
                 break
             else:
                 print(" Error: Stay length must be between 1 and 7 days.")
-        except :
+        except:
             print(" Error: Please enter a valid integer.")
 
     # --- Booking date (default today) ---
@@ -79,7 +82,7 @@ def make_booking():
             apartment_rate_per_night = rate
             break
 
-    # total cost & reward points 
+    # total cost & reward points
     total_cost = apartment_rate_per_night * stay_length
     reward_points = round(total_cost)
 
@@ -170,7 +173,6 @@ def show_apartments():
         print(f"- {apt.title()} Apartment : ${rate} (AUD)")
 
 
-
 def menu():
     while True:
         print("""
@@ -197,12 +199,11 @@ def menu():
             print(" Invalid choice. Please try again.")
 
 
-if __name__ == "__main__":
-    print("""
+print("""
 *********************
       WELCOME TO
 *** Debuggers Hut ***
 *********************
 """)
 
-    menu()
+menu()
