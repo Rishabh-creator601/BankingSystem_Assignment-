@@ -132,18 +132,18 @@ def make_booking():
 
     # print receipt
     print(f"""
-=========================================================
- Debuggers Hut Serviced Apartments - Booking Receipt
-=========================================================
-Guest Name: {main_guest}
-Number of guests: {n_guests}
-Apartment name: {unit_apartment}
-Apartment rate: ${apartment_rate_per_night} (AUD)
-Check-in date: {check_in_date}
-Check-out date: {check_out_date}
-Length of stay: {stay_length} (nights)
-Booking date: {booking_date}
---------------------------------------------------------------------------------""")
+        =========================================================
+        Debuggers Hut Serviced Apartments - Booking Receipt
+        =========================================================
+        Guest Name: {main_guest}
+        Number of guests: {n_guests}
+        Apartment name: {unit_apartment}
+        Apartment rate: ${apartment_rate_per_night} (AUD)
+        Check-in date: {check_in_date}
+        Check-out date: {check_out_date}
+        Length of stay: {stay_length} (nights)
+        Booking date: {booking_date}
+        --------------------------------------------------------------------------------""")
 
     if extras_selected:
         print("Supplementary Items:")
@@ -152,10 +152,10 @@ Booking date: {booking_date}
         print("--------------------------------------------------------------------------------")
 
     print(f"""Total cost: ${total_cost} (AUD)
-Earned rewards: {reward_points} (points)
-Thank you for your booking! We hope you will have an enjoyable stay.
-=========================================================
-""")
+        Earned rewards: {reward_points} (points)
+        Thank you for your booking! We hope you will have an enjoyable stay.
+        =========================================================
+        """)
 
 
 def show_guests():
@@ -174,14 +174,14 @@ def show_apartments():
 def menu():
     while True:
         print("""
-=============================
-   Debuggers Hut - Main Menu
-=============================
-1. Make a booking
-2. Show all guests
-3. Show all apartments
-4. Exit
-""")
+        =============================
+        Debuggers Hut - Main Menu
+        =============================
+        1. Make a booking
+        2. Show all guests
+        3. Show all apartments
+        4. Exit
+        """)
         choice = input("Enter your choice (1-4): ")
 
         if choice == "1":

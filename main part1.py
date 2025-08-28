@@ -1,4 +1,4 @@
-import time 
+
 from datetime import datetime
 from collections import namedtuple
 
@@ -25,11 +25,10 @@ print("""
 *********************
       WECOME TO
 *** Debuggers Hut ***
-*********************
-""")
+*********************""")
 
 
-time.sleep(1.5)
+
 
 print("""
 -- Welcome to Apartment Management System --
@@ -42,9 +41,6 @@ Our buildings are:
 
 
 now  = datetime.now().strftime("%d/%m/%Y")
-
-
-time.sleep(1.5)
 
 main_guest =  input("Enter the name of main guest [eg : Oliver]:\n")
 n_guests = int(input("Enter the number of guests [eg : 3]:\n"))
