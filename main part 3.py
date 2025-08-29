@@ -1,11 +1,11 @@
 ## User class instead of namedtuple
 class User:
-    def __init__(self, name, UnitID, reward_points,supplementary_items_dict={},capacity=3):
+    def __init__(self, name, UnitID, reward_points,supplementary_items_dict=None,capacity=3):
         self.name = name
         self.UnitID = UnitID
         self.reward_points = reward_points
         self.capacity =  capacity # Default capacity (no of beds)
-        self.supplementary_items_dict =  supplementary_items_dict  # Dict to hold supplementary items
+        self.supplementary_items_dict =  supplementary_items_dict or {} # Dict to hold supplementary items
 
     def __repr__(self):
         return f"User(name={self.name}, UnitID={self.UnitID}, reward_points={self.reward_points})"
@@ -45,6 +45,16 @@ def validate_apartment_id(apt_id):
     return True
 
 
+
+def get_id(apt_id):
+    local_p=  None
+    for p in profiles :
+        if p.UnitID == apt_id:
+            local_p = p
+            break 
+    
+    return local_p
+
 def update_apartment():
     
     while True:
@@ -54,15 +64,17 @@ def update_apartment():
         else:
             print(" Error: Invalid apartment ID. Must contain swan/goose/duck.")
         
-    for p in profiles:
-        if p.UnitID == apt_id:
-            print("Hello {p.name} !")
-            print(f" found User {p.name}: Apartment : {apt_id} || rate :  ${p.reward_points} || capacity : { p.capacity}.")
-            updated_value =  input("Enter new values : [apartment_id rate capacity] : \n for ex: U20swan 195.0 3 \n").split()
-            p.reward_points = float(updated_value[1])
-            p.capacity = int(updated_value[2])
-            print("Values updated successfully.")
-            break 
+    p =  get_id(apt_id)
+    
+    if p :
+        print("Hello {p.name} !")
+        print(f" found User {p.name}: Apartment : {apt_id} || rate :  ${p.reward_points} || capacity : { p.capacity}.")
+        updated_value =  input("Enter new values : [apartment_id rate capacity] : \n for ex: U20swan 195.0 3 \n").split()
+        p.reward_points = float(updated_value[1])
+        p.capacity = int(updated_value[2])
+        print("Values updated successfully.")
+        
+    
     else:
         print(" Apartment not found in profiles.")
         print(" Adding new apartment details...")
@@ -72,28 +84,32 @@ def update_apartment():
 
 def update_supplementary_item():
     
+    local_User= None 
+    
     
     apt_id =  input("Enter apartment Unit ID to update supplementary item [eg : U20swan]:\n")
     
         
-    for p in profiles:
-        if p.UnitID == apt_id:
-           print(f"Hello {p.name} !")
-           print(f" found User {p.name} : Apartment : {apt_id} || rate :  ${p.reward_points} || capacity : { p.capacity}.")
-           if p.supplementary_items_dict == {}:
-               print("No supplementary items found for this user.")
-           else:
-               for key , value in p.supplementary_items_dict.items():
-                   print(f"- {key} : ${value}")
+    p =  get_id(apt_id)
+    if p :
+        print(f"Hello {p.name} !")
+        print(f" found User {p.name} : Apartment : {apt_id} || rate :  ${p.reward_points} || capacity : { p.capacity}.")
+        local_User = p
+        if p.supplementary_items_dict == {}:
+            print("No supplementary items found for this user.")
+        else:
+            for key , value in p.supplementary_items_dict.items():
+                print(f"- {key} : ${value}")
             
-    item_to_update = input("Enter item ID and rate to update format : [item_id 45]\n for ex :  toothpaste 54.5 \n").strip().lower()
-    item_parts = item_to_update.split()
-    supp_id =  item_parts[0]
-    new_rate = float(item_parts[1])
-    if supp_id in list(p.supplementary_items_dict.keys()):
-        p.supplementary_items_dict[supp_id] = new_rate
-        print(f" Supplementary item {supp_id} updated to ${new_rate}.")
-            
+    item_to_update = input("Enter item ID and rate to update format : [item_1 rate_1 item_2 rate_2 ]\n for ex :  toothpaste 54.5 \n").strip().lower()
+    item_parts = item_to_update.split(",")
+    print(item_parts)
+    
+    for part in item_parts:
+        part_ =  part.split()
+        if part_[0] in supplementary_items.keys():
+            local_User.supplementary_items_dict[part_[0]] = float(part_[1])
+    print(f" ({len(item_parts)}) Supplementary items updated/Added successfully.")
         
            
             
@@ -119,39 +135,33 @@ def make_booking():
         print(" Error: Please enter a valid integer.")
 
     # --- Apartment ID validation ---
+    max_beds =  2
+    deafult_capacity =  3
+    new_capacity =  0
     while True:
         unit_apartment = input("Enter apartment Unit ID to book [eg : U20swan]:\n")
         n_guests = int(n_guests)
         if validate_apartment_id(unit_apartment):
-            for p in profiles:
-                if p.UnitID == unit_apartment:
-                    if int(n_guests) > p.capacity:
-                        print(f" Warning: Number of guests ({n_guests}) exceeds apartment capacity ({p.capacity}).")
-                        max_extra_beds = 2
-                        while True:
-                            try:
-                                extra_beds = int(input(f"Do you want to add extra bed(s)? Max {max_extra_beds} (each bed accommodates 2): \n mention no of extra beds \n "))
-                                if 0 <= extra_beds <= max_extra_beds:
-                                    break
-                                else:
-                                    print(f" Error: Enter a number between 0 and {max_extra_beds}.")
-                            except ValueError:
-                                print(" Error: Please enter a valid integer.")
-
-                        # Check if guests fit after adding extra beds
-                        total_capacity = p.capacity + extra_beds * 2
-                        if n_guests > total_capacity:
-                            print("Even with extra beds, the number of guests exceeds capacity. Booking cannot proceed.")
-                            return  # exit to main menu
-                        else:
-                            if extra_beds > 0:
-                                print(f" Added {extra_beds} extra bed(s). New capacity is {total_capacity}.")
-                                # Add extra bed as a supplementary item for cost
-                                cost_extra_beds = extra_beds * supplementary_items['extra_bed']['price']
-                                # extras_total += cost_extra_beds
-                                p.supplementary_items_dict['extra_bed'] = cost_extra_beds
-                                p.capacity = total_capacity
-                            break
+            if n_guests >  deafult_capacity:
+                print(f"please consider ordering an extra bed.")
+                n_beds_add =  input("How much beds you want to add ? (0-2): \n (each bed accommodates 2 guests) \n")
+                
+                if n_beds_add.isdigit() and 0 <= int(n_beds_add) <= max_beds:
+                    n_beds_add = int(n_beds_add)
+                    new_capacity= deafult_capacity + (n_beds_add * 2)
+                    if new_capacity >= n_guests :
+                        print(f" New capacity with extra beds is : {new_capacity}")
+                        print(f"[AUTO] The Selected extra beds(s) are : {supplementary_items['extra_bed']['price'] * n_beds_add}")
+                    else:
+                        print("Booking cant be proceed as capacity is less than number of guests. \n Canceling booking...")
+                        return
+                    
+                    
+                
+             
+                
+            
+            
                           
             apartment_type = next((apt for apt in apartment_rate_list if apt in unit_apartment), None)
             print(f"[AUTO] The Selected Unit rate is : ${apartment_rate_list[apartment_type]}")
@@ -191,6 +201,13 @@ def make_booking():
     extras_total = 0
     extras_selected = []
     extras_selected_dict = {}
+    
+    if new_capacity > 0 :
+        extras_selected_dict["extra_bed"] =  supplementary_items['extra_bed']['price'] * n_beds_add
+        extras_selected.append(("extra_bed", n_beds_add, supplementary_items['extra_bed']['price'] * n_beds_add))
+        extras_total += supplementary_items['extra_bed']['price'] * n_beds_add
+        
+        
     while (want_extras := input("Do you want supplementary items? (y/n): ").lower()) not in ["y", "n"]:
         print(" Error: Please answer with y or n.")
 
@@ -228,7 +245,10 @@ def make_booking():
     for i, u in enumerate(profiles):
         if u.name == main_guest:
             updated_points = u.reward_points + reward_points
-            profiles[i] = User(u.name, unit_apartment, updated_points)
+            u.reward_points  =  updated_points
+            u.UnitID = unit_apartment
+            u.supplementary_items_dict.update(extras_selected_dict)
+            print(f" Updated {u.name}'s reward points to {updated_points}.")
             break
     else:
         profiles.append(User(main_guest, unit_apartment, reward_points,supplementary_items_dict=extras_selected_dict))
@@ -282,7 +302,7 @@ def menu():
         =============================
         1. Make a booking
         2. Add/update information of an apartment unit
-        3. Add/update information of a supplementary item
+        3. Add/update information of a supplementary item(s))
         4. Show all guests
         5. Show all apartments
         6. Exit

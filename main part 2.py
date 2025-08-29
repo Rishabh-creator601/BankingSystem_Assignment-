@@ -1,11 +1,11 @@
 ## User class instead of namedtuple
 class User:
-    def __init__(self, name, UnitID, reward_points,supplementary_items_dict={},capacity=1):
+    def __init__(self, name, UnitID, reward_points,supplementary_items_dict=None,capacity=1):
         self.name = name
         self.UnitID = UnitID
         self.reward_points = reward_points
         self.capacity =  capacity # Default capacity (no of beds)
-        self.supplementary_items_dict =  supplementary_items_dict  # Dict to hold supplementary items
+        self.supplementary_items_dict =  supplementary_items_dict or {} # Dict to hold supplementary items
 
     def __repr__(self):
         return f"User(name={self.name}, UnitID={self.UnitID}, reward_points={self.reward_points})"
