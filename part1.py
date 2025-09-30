@@ -1,12 +1,26 @@
+import csv
+
+
+
+## Searching for file
+file_status= False
+
+try :
+    with open("guests.csv","r") as f :
+        file_status = True
+        guests =  csv.reader(f)
+except :
+    file_status = False
+    print("⚠️⚠️ Warning : File not found , please insert it in local directory !!!")
 
 
 # ---------- GUEST  --------
 class Guest:
-    def __init__(self, guest_id, name):
+    def __init__(self, guest_id, name,reward_points):
 
         self.id = guest_id
         self.name = name
-        self.reward_points  = 50 ## Initalized 50 points for each guest 
+        self.reward_points  = reward_points ## Initalized 50 points for each guest 
         self.reward_rate = 1.0    
         self.redeem_rate = 0.01     
 
@@ -41,6 +55,57 @@ class Guest:
 
     def set_redeem_rate(self, rate_percent):
         self.__redeem_rate = rate_percent / 100.0
+        
+
+
+
+
+class Records :
+    def __init__(self):
+        self.Guests =  {}
+        self.guests_list =  list(self.Guests.keys())
+        self.product_list =  list(SupplementaryItems.keys())
+        
+    
+    def read_csv(self,filename):
+
+        with open("guests.csv","r") as f :
+
+            guests_file =  csv.reader(f)
+            for g in guests_file :
+                g_id =  int(g[0])
+                g_name =  g[1]
+                g_r_rate =  int(g[2])
+                g_r =  int(g[3])
+                g_redeem_r = int(g[4])
+                self.Guests[g_id] = Guest(g_id,g_name,g_r)
+                self.Guests[g_id].set_reward_rate(g_r_rate)
+                self.Guests[g_id].set_redeem_rate(g_redeem_r)
+    
+    
+    def find_guest(self,id=None, name=None):
+        
+        
+        # Guest found via id 
+        if (id != None ) and id in self.guests_list:
+            guest_found =  self.Guests[id]
+        
+        # Guest found via name 
+        elif (name != None):
+            for id_hover,guest_ in self.Guests.items():
+                if guest_.name == name:
+                    guest_found =  self.Guests[id_hover]
+            
+        return guest_found
+            
+            
+
+
+        
+    
+    
+    
+Guests  = Records.Guests
         
 
 # ----------- Product ----------
@@ -100,7 +165,7 @@ class SupplementaryItem(Product):
         print(f"Stock Quantity: {self.__stock_quantity}")
         
 
-
+## Supplementart Items objects and their respective values 
 SupplementaryItems = {
     "car_park":SupplementaryItem("car_park","Car Parking",25,"Car park for 1 car. (per night rate)"),
     "breakfast":SupplementaryItem("breakfast","Breakfast",21,"Continental breakfast meal. (per person)"),
@@ -108,6 +173,7 @@ SupplementaryItems = {
     "extra_bed":SupplementaryItem("extra_bed","Extra Bed",50,"Removable extra bed that can fit up 2 people. (per item per night) ")
     }
         
+
 # -------  Order -------------
 
 
@@ -118,12 +184,29 @@ class Order:
         self.product_ids =  product_ids
         self.quantity =  quantity
         self.total_cost = 0
-        
+        self.discount  = 0
     
     def compute_cost(self):
 
         for i in self.product_ids:
             self.total_cost +=  SupplementaryItems[i].get_price()
+        
+        
+        user =  Guests[self.guest_id]
+        self.discount =  user.get_discount()
+        user.update_reward(user.calculate_reward(self.total_cost))
+        self.new_price =  self.total_cost -  self.discount
+        
+        return (self.total_cost,self.discount, self.new_price)
+    
+    
+
+
+            
+            
+        
+        
+       
             
             
 
