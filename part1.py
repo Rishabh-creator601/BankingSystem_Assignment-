@@ -9,6 +9,7 @@ try :
     with open("guests.csv","r") as f :
         file_status = True
         guests =  csv.reader(f)
+        print("File Found and loaded ")
 except :
     file_status = False
     print("⚠️⚠️ Warning : File not found , please insert it in local directory !!!")
@@ -60,52 +61,12 @@ class Guest:
 
 
 
-class Records :
-    def __init__(self):
-        self.Guests =  {}
-        self.guests_list =  list(self.Guests.keys())
-        self.product_list =  list(SupplementaryItems.keys())
-        
-    
-    def read_csv(self,filename):
-
-        with open("guests.csv","r") as f :
-
-            guests_file =  csv.reader(f)
-            for g in guests_file :
-                g_id =  int(g[0])
-                g_name =  g[1]
-                g_r_rate =  int(g[2])
-                g_r =  int(g[3])
-                g_redeem_r = int(g[4])
-                self.Guests[g_id] = Guest(g_id,g_name,g_r)
-                self.Guests[g_id].set_reward_rate(g_r_rate)
-                self.Guests[g_id].set_redeem_rate(g_redeem_r)
-    
-    
-    def find_guest(self,id=None, name=None):
-        
-        
-        # Guest found via id 
-        if (id != None ) and id in self.guests_list:
-            guest_found =  self.Guests[id]
-        
-        # Guest found via name 
-        elif (name != None):
-            for id_hover,guest_ in self.Guests.items():
-                if guest_.name == name:
-                    guest_found =  self.Guests[id_hover]
-            
-        return guest_found
-            
-            
-
 
         
     
     
     
-Guests  = Records.Guests
+
         
 
 # ----------- Product ----------
@@ -150,29 +111,107 @@ class ApartmentUnit(Product):
 
 # --------------- Supplemetary Item ----------------
 class SupplementaryItem(Product):
-    def __init__(self, product_id, name, price,desc):
+    def __init__(self, product_id, name, price):
         super().__init__(product_id, name, price)
-        self.desc= desc
 
 
     def display_info(self):
         print(f"Supplementary Item ID: {self.get_id()}")
         print(f"Name: {self.get_name()}")
-        print(self.desc)
         print(f"Price: {self.get_price()}")
         if self.__category:
             print(f"Category: {self.__category}")
         print(f"Stock Quantity: {self.__stock_quantity}")
         
 
-## Supplementart Items objects and their respective values 
-SupplementaryItems = {
-    "car_park":SupplementaryItem("car_park","Car Parking",25,"Car park for 1 car. (per night rate)"),
-    "breakfast":SupplementaryItem("breakfast","Breakfast",21,"Continental breakfast meal. (per person)"),
-    "toothpaste":SupplementaryItem("toothpaste","ToothPaste",5,"Toothpaste – generic brand (per tube)"),
-    "extra_bed":SupplementaryItem("extra_bed","Extra Bed",50,"Removable extra bed that can fit up 2 people. (per item per night) ")
-    }
+class Records :
+    def __init__(self):
+        self.Guests =  {}
+        self.guests_list =  list(self.Guests.keys())
         
+        self.SupplementaryItems = {}
+        self.supp_list =  list(self.SupplementaryItems.keys())
+        
+        self.ApartmentUnits  = {}
+        self.apt_list=  list(self.ApartmentUnits.keys())
+        
+    
+    def read_csv(self,filename):
+
+        with open("guests.csv","r") as f :
+
+            guests_file =  csv.reader(f)
+            for g in guests_file :
+                g_id =  int(g[0])
+                g_name =  g[1]
+                g_r_rate =  int(g[2])
+                g_r =  int(g[3])
+                g_redeem_r = int(g[4])
+                self.Guests[g_id] = Guest(g_id,g_name,g_r)
+                self.Guests[g_id].set_reward_rate(g_r_rate)
+                self.Guests[g_id].set_redeem_rate(g_redeem_r)
+    
+    def read_products(self,filename):
+        with open("products.csv","r") as f:
+            product_file =  csv.reader(f)
+            for product in product_file:
+                
+                # for adding product like breakfast , car park
+                if product[0].startswith("S"):
+                    s_item  = product[0]
+                    s_name =  product[1]
+                    s_rate  = int(product[2])
+                    self.SupplementaryItems[s_item] = SupplementaryItem(s_item,s_name,s_rate)
+                    
+                # for adding Apartment Unit like U12 , U20 etc 
+                if product[0].startswith("U"):
+                    a_item =  product[0]
+                    a_name =  product[1]
+                    a_price=  product[1]
+                    a_capacity =  product[2]
+                    self.ApartmentUnits[a_item]=  ApartmentUnit(a_item,a_name,a_price,a_capacity)
+                    
+                    
+            
+    
+    
+    def find_guest(self,id=None, name=None):
+        
+        
+        # Guest found via id 
+        if (id != None ) and id in self.guests_list:
+            guest_found =  self.Guests[id]
+        
+        # Guest found via name 
+        elif (name != None):
+            for id_hover,guest_ in self.Guests.items():
+                if guest_.name == name:
+                    guest_found =  self.Guests[id_hover]
+            
+        return guest_found
+    
+    
+    def list_guest(self):
+        
+        print("="*45)
+        for id,g in self.Guests.items():
+            print(f"""
+Guest ID  : {id}
+Name : {g.name}
+Reward Points : {g.reward_points}
+Redeem Rate :  {g.redeem_rate}
+Reward Rate : {g.reward_rate}
+                   
+                  """)
+            print("*"*40)
+            
+            
+            
+
+Guests  = Records().Guests
+Guests.read_csv("guests.csv")
+SupplementaryItems = Records().SupplementaryItems
+SupplementaryItems.read_products("prodcuts.csv")
 
 # -------  Order -------------
 
@@ -200,6 +239,9 @@ class Order:
         return (self.total_cost,self.discount, self.new_price)
     
     
+
+
+
 
 
             
