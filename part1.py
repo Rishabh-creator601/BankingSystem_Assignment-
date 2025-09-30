@@ -119,9 +119,7 @@ class SupplementaryItem(Product):
         print(f"Supplementary Item ID: {self.get_id()}")
         print(f"Name: {self.get_name()}")
         print(f"Price: {self.get_price()}")
-        if self.__category:
-            print(f"Category: {self.__category}")
-        print(f"Stock Quantity: {self.__stock_quantity}")
+
         
 
 class Records :
@@ -160,7 +158,7 @@ class Records :
                 if product[0].startswith("S"):
                     s_item  = product[0]
                     s_name =  product[1]
-                    s_rate  = int(product[2])
+                    s_rate  = float(product[2])
                     self.SupplementaryItems[s_item] = SupplementaryItem(s_item,s_name,s_rate)
                     
                 # for adding Apartment Unit like U12 , U20 etc 
@@ -177,7 +175,7 @@ class Records :
     
     def find_guest(self,id=None, name=None):
         
-        
+        guest_found  = None 
         # Guest found via id 
         if (id != None ) and id in self.guests_list:
             guest_found =  self.Guests[id]
@@ -189,6 +187,22 @@ class Records :
                     guest_found =  self.Guests[id_hover]
             
         return guest_found
+    
+    def find_product(self,id=None, name=None):
+        
+        product_found  = None 
+        # Guest found via id 
+        if (id != None ) and id in self.supp_list:
+            product_found =  self.SupplementaryItems[id]
+        
+        # Guest found via name 
+        elif (name != None):
+            for id_hover,product_ in self.SupplementaryItems.items():
+                if product_.name == name:
+                    product_found =  self.SupplementaryItems[id_hover]
+            
+        return product_found
+        
     
     
     def list_guest(self):
@@ -204,14 +218,33 @@ Reward Rate : {g.reward_rate}
                    
                   """)
             print("*"*40)
+        print("="*45)
+    
+    
+    
+    def list_products(self,product_type):
+        
+        if product_type == "apartment":
+            print("="*45)
+            for apt_id,apt in self.ApartmentUnits.items():
+                apt.display_info()
+                print("*"*45)
+            print("="*45)
+        else:
+            print("="*45)
+            for p_id,p in self.SupplementaryItems.items():
+                p.display_info()
+                print("*"*45)
+            print("="*45)
             
             
             
 
-Guests  = Records().Guests
-Guests.read_csv("guests.csv")
-SupplementaryItems = Records().SupplementaryItems
-SupplementaryItems.read_products("prodcuts.csv")
+R  = Records()
+R.read_csv("guests.csv") ;  R.read_products("products.csv")
+Guests  = R.Guests
+SupplementaryItems = R.SupplementaryItems
+
 
 # -------  Order -------------
 
@@ -243,8 +276,8 @@ class Order:
 
 
 
-
-            
+R.list_guest()
+R.list_products("apartment")
             
         
         
