@@ -93,6 +93,18 @@ class Product:
 
 
 # ------------- Apartment Unit -------------
+'''
+Apartment Units are :
+- Swan  : 100 rooms 
+- Goose :  100 rooms 
+- Duck : 100 rooms 
+
+'''
+# apt rates from previous assignment 
+apt_rates =  {"swan":95,
+              "duck":106.7,
+              "goose":145.2}
+
 class ApartmentUnit(Product):
     def __init__(self, product_id, name, price, capacity):
 
@@ -138,7 +150,7 @@ class Records :
 
         with open("guests.csv","r") as f :
 
-            guests_file =  csv.reader(f)
+            guests_file =  csv.reader(f,delimiter=",")
             for g in guests_file :
                 g_id =  int(g[0])
                 g_name =  g[1]
@@ -245,12 +257,11 @@ R.read_csv("guests.csv") ;  R.read_products("products.csv")
 Guests  = R.Guests
 SupplementaryItems = R.SupplementaryItems
 
-
 # -------  Order -------------
 
 
 class Order: 
-    def __init__(self,guest_id:str,product_ids,quantity:int):
+    def __init__(self,guest_id,product_ids,quantity):
         
         self.guest_id =  guest_id
         self.product_ids =  product_ids
@@ -272,8 +283,39 @@ class Order:
         return (self.total_cost,self.discount, self.new_price)
     
     
+class Operations:
+    def __init__(self):
+        pass 
+    
+    
+    def make_booking(self):
+        
+        self.guest_name = input("Enter guest name: ")
+        self.num_guests = int(input("Enter number of guests: "))
+        self.apartment_id = input("Enter apartment ID: ")
+        self.check_in = input("Enter check-in date (YYYY-MM-DD): ")
+        self.check_out = input("Enter check-out date (YYYY-MM-DD): ")
+        self.booking_date = input("Enter booking date (YYYY-MM-DD): ")
+        self.supplementary_item_id = input("Enter supplementary item ID: ")
+        self.supplementary_item_qty = int(input("Enter supplementary item quantity: "))
+        
+        
+        if R.find_guest(name=self.guest_name) == None and self.apartment_id not in R.apt_list:
+            g_id =  str(len(R.Guests) +  1)
+            R.Guests[g_id] =  Guest(g_id,self.guest_name,self.num_guests*30)
+            print(self.apartment_id[2:])
 
+            
+            if self.apartment_id[3:] in apt_rates.keys():
+                price =  apt_rates[self.apartment_id[3:]]
+        
+            R.ApartmentUnits[self.apartment_id] = ApartmentUnit(self.apartment_id,f"{self.apartment_id} Building ",price,self.num_guests)
+        else:
+            print("NAME ALREADY EXISTS AND HENCE NO REGISTRAION")
+            
+        
 
+Operations().make_booking()
 
 
 R.list_guest()
