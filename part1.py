@@ -351,7 +351,7 @@ class Operations:
         if user_exist== None :
             g_id =  str(len(R.Guests) +  1)
             R.Guests[g_id] =  Guest(g_id,self.guest_name,self.num_guests*30)
-            print(self.apartment_id[3:])
+            # print(self.apartment_id[3:])
 
             
             if self.apartment_id[3:] in apt_rates.keys():
