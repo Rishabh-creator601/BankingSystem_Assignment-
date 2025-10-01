@@ -1,5 +1,5 @@
 import csv
-
+from datetime import datetime
 
 
 ## Searching for file
@@ -9,7 +9,7 @@ try :
     with open("guests.csv","r") as f :
         file_status = True
         guests =  csv.reader(f)
-        print("File Found and loaded ")
+        print(" ✔️ File Found and loaded ")
 except :
     file_status = False
     print("⚠️⚠️ Warning : File not found , please insert it in local directory !!!")
@@ -132,6 +132,44 @@ class SupplementaryItem(Product):
         print(f"Name: {self.get_name()}")
         print(f"Price: {self.get_price()}")
 
+
+
+def generate_receipt(
+    guest_name, number_of_guests,
+    apartment_name, apartment_rate,
+    checkin_date, checkout_date, nights,
+    booking_date,
+    apartment_sub_total,
+    supplementary_items,  # list of tuples: (id, name, qty, unit_price)
+    supp_sub_total,
+    total_cost, reward_points, discount, final_total, earned_rewards
+):
+    print("="*80)
+    print(f"Guest name: {guest_name}")
+    print(f"Number of guests: {number_of_guests}")
+    print(f"Apartment name: {apartment_name}")
+    print(f"Apartment rate: $ {apartment_rate:.2f} (AUD)")
+    print(f"Check-in date: {checkin_date}")
+    print(f"Check-out date: {checkout_date}")
+    print(f"Length of stay: {nights} (nights)")
+    print(f"Booking date: {booking_date}")
+    print(f"Sub-total: $ {apartment_sub_total:.2f} (AUD)")
+    print("-"*80)
+    print("Supplementary items")
+    print(f"{'ID':<10}{'Name':<20}{'Qty':<10}{'Unit Price $':<15}{'Cost $':<10}")
+    for (sid, name, qty, unit_price )in supplementary_items:
+        print(f"{sid:<10}{name:<20}{qty:<10}{unit_price:<15.2f}")
+    print(f"Sub-total: $ {supp_sub_total:.2f}")
+    print("-"*80)
+    print(f"Total cost: $ {total_cost:.2f} (AUD)")
+    print(f"Reward points to redeem: {reward_points}")
+    print(f"Discount based on points: $ {discount:.2f} (AUD)")
+    print(f"Final total cost: $ {final_total:.2f} (AUD)")
+    print(f"Earned rewards: {earned_rewards}")
+    print("Thank you for your booking!")
+    print("We hope you will have an enjoyable stay.")
+    print("="*80)
+
         
 
 class Records :
@@ -175,28 +213,31 @@ class Records :
                     
                 # for adding Apartment Unit like U12 , U20 etc 
                 if product[0].startswith("U"):
-                    a_item =  product[0]
-                    a_name =  product[1]
-                    a_price=  product[1]
-                    a_capacity =  product[2]
-                    self.ApartmentUnits[a_item]=  ApartmentUnit(a_item,a_name,a_price,a_capacity)
+                    a_item = product[0]
+                    a_name = product[1]
+                    a_price = float(product[2]) 
+                    a_capacity = int(product[3])  # assuming 4th column is capacity
+                    self.ApartmentUnits[a_item] = ApartmentUnit(a_item, a_name, a_price, a_capacity)
+
                     
                     
             
-    
+
     
     def find_guest(self,id=None, name=None):
         
         guest_found  = None 
         # Guest found via id 
-        if (id != None ) and id in self.guests_list:
+        if (id != None ) and id in self.Guests:
             guest_found =  self.Guests[id]
         
         # Guest found via name 
         elif (name != None):
             for id_hover,guest_ in self.Guests.items():
+                #print("Processing:",guest_.name)
                 if guest_.name == name:
                     guest_found =  self.Guests[id_hover]
+                    break 
             
         return guest_found
     
@@ -272,7 +313,7 @@ class Order:
     def compute_cost(self):
 
         for i in self.product_ids:
-            self.total_cost +=  SupplementaryItems[i].get_price()
+            self.total_cost +=  SupplementaryItems[i].get_price() * self.quantity
         
         
         user =  Guests[self.guest_id]
@@ -285,10 +326,14 @@ class Order:
     
 class Operations:
     def __init__(self):
-        pass 
+        pass
     
     
     def make_booking(self):
+        
+        
+        
+        
         
         self.guest_name = input("Enter guest name: ")
         self.num_guests = int(input("Enter number of guests: "))
@@ -300,31 +345,104 @@ class Operations:
         self.supplementary_item_qty = int(input("Enter supplementary item quantity: "))
         
         
-        if R.find_guest(name=self.guest_name) == None and self.apartment_id not in R.apt_list:
+        user_exist =  R.find_guest(name=self.guest_name)
+        
+        
+        if user_exist== None :
             g_id =  str(len(R.Guests) +  1)
             R.Guests[g_id] =  Guest(g_id,self.guest_name,self.num_guests*30)
-            print(self.apartment_id[2:])
+            print(self.apartment_id[3:])
 
             
             if self.apartment_id[3:] in apt_rates.keys():
                 price =  apt_rates[self.apartment_id[3:]]
         
             R.ApartmentUnits[self.apartment_id] = ApartmentUnit(self.apartment_id,f"{self.apartment_id} Building ",price,self.num_guests)
+            print(f"User registered succesfully with ID  : {g_id} and apartment ID : {self.apartment_id}")
         else:
-            print("NAME ALREADY EXISTS AND HENCE NO REGISTRAION")
+            
+            #  IF THE USER ALREADY EXSIST 
+            total_cost, discount, new_price =  Order(user_exist.id,[self.supplementary_item_id],self.supplementary_item_qty).compute_cost()
+            
+            apt_rate_ =  apt_rates[self.apartment_id[3:]]
+            
+            supp_item_  =  SupplementaryItems[self.supplementary_item_id]
+      
+            supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.get_name(),self.supplementary_item_qty,supp_item_.get_price())]
+            nights = (datetime.strptime(self.check_out, "%Y-%m-%d") -datetime.strptime(self.check_in, "%Y-%m-%d")).days
+            
+            
+            apt_sub_total =  apt_rate_ * nights 
+            
+            generate_receipt(
+                guest_name=user_exist.name,
+                number_of_guests=self.num_guests,
+                apartment_name=self.apartment_id[3:],
+                apartment_rate=apt_rate_,
+                checkin_date=self.check_in,
+                checkout_date=self.check_out,
+                nights=nights ,
+                booking_date=self.booking_date,
+                apartment_sub_total=apt_sub_total,
+                supplementary_items=supp_item_tuple_,
+                supp_sub_total=total_cost,
+                final_total=new_price,
+                reward_points=user_exist.reward_points,
+                discount=discount,
+                total_cost=apt_rate_+total_cost,
+                earned_rewards=user_exist.get_reward(apt_rate_ + total_cost)
+            )
+    def display_menu(self):
+        while True:
+            print("\n" + "="*40)
+            print("🏨 Hotel Management System 🏨")
+            print("="*40)
+            print("1. Make a booking")
+            print("2. Display existing guests")
+            print("3. Display existing apartment units")
+            print("4. Display existing supplementary items")
+            print("5. Exit")
+            print("="*40)
+
+            choice = input("Enter your choice (1-5): ").strip()
+
+            if choice == "1":
+                self.make_booking()
+            elif choice == "2":
+                R.list_guest()
+            elif choice == "3":
+                R.list_products("apartment")
+            elif choice == "4":
+                R.list_products("supplementary")
+            elif choice == "5":
+                print("Exiting program. Thank you!")
+                break
+            else:
+                print("⚠️ Invalid choice. Please try again.")
+            
             
         
 
-Operations().make_booking()
+# Operations().make_booking()
 
 
-R.list_guest()
-R.list_products("apartment")
+# #print(SupplementaryItems["SI3"].get_name())
+
+# # R.list_guest()
+# # R.list_products("apartment")
+
+# # print(R.find_guest(name="James").id)
+
+
+Operations().display_menu()
+
+
+
+
+    
+    
+
+
             
         
-        
-       
-            
-            
-
-
+    
