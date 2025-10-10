@@ -340,7 +340,6 @@ class Operations:
         self.apartment_id = input("Enter apartment ID: ")
         self.check_in = input("Enter check-in date (YYYY-MM-DD): ")
         self.check_out = input("Enter check-out date (YYYY-MM-DD): ")
-        self.length_stay =  input("Enter Stay Length (Ex :  5) : ")
         self.booking_date = input("Enter booking date (YYYY-MM-DD): ")
         self.supplementary_item_id = input("Enter supplementary item ID: ")
         self.supplementary_item_qty = int(input("Enter supplementary item quantity: "))
@@ -370,8 +369,7 @@ class Operations:
             supp_item_  =  SupplementaryItems[self.supplementary_item_id]
       
             supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.get_name(),self.supplementary_item_qty,supp_item_.get_price())]
-            #nights = (datetime.strptime(self.check_out, "%Y-%m-%d") -datetime.strptime(self.check_in, "%Y-%m-%d")).days
-            nights=  self.length_stay
+            nights = (datetime.strptime(self.check_out, "%Y-%m-%d") -datetime.strptime(self.check_in, "%Y-%m-%d")).days
             
             
             apt_sub_total =  apt_rate_ * nights 
