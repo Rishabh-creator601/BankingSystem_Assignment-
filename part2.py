@@ -208,7 +208,7 @@ class Records :
         self.apt_list=  list(self.ApartmentUnits.keys())
         
         
-        self.bundles =  []
+        self.bundles =  {}
         
     
     def read_csv(self,filename):
@@ -255,7 +255,8 @@ class Records :
                     name = product[1]
                     components = product[2:-1]  # all columns except ID, Name, Price
                     price = float(product[-1])
-                    self.bundles.append(Bundle(bundle_id, name, components, price))
+                    bundle_obj = Bundle(bundle_id, name, components, price)
+                    self.bundles[bundle_id] =  bundle_obj
         
     def find_guest(self,id=None, name=None):
         
@@ -334,7 +335,7 @@ Reward Rate : {g.reward_rate}
         print(f"{'ID':<10}{'Name':<45}{'Components':<40}{'Price':<10}")
         print("-"*105)
         
-        for bundle in self.bundles:
+        for bundle in self.bundles.values():
             print(f"{bundle.id:<10}{bundle.name:<45}{bundle.display_components():<40}{bundle.price:<10.2f}")
     
     
@@ -372,19 +373,25 @@ BundleItems =  R.bundles
 
 
 class Order: 
-    def __init__(self,guest_id,product_ids,quantity):
+    def __init__(self,guest_id,product_ids,quantity,is_bundle):
         
         self.guest_id =  guest_id
         self.product_ids =  product_ids
         self.quantity =  quantity
         self.total_cost = 0
         self.discount  = 0
+        self.is_bundle =  is_bundle
     
     def compute_cost(self):
-
-        for i in self.product_ids:
-            self.total_cost +=  SupplementaryItems[i].get_price() * self.quantity
         
+        if self.is_bundle  == False:
+            for i in self.product_ids:
+                self.total_cost +=  SupplementaryItems[i].get_price() * self.quantity
+        else:
+            for i in self.product_ids:
+                self.total_cost +=  BundleItems[i].price
+            
+        ## if bundle it is already discount but will get more discount as per rewards  points 
         
         user =  Guests[self.guest_id]
         self.discount =  user.get_discount()
@@ -463,16 +470,24 @@ class Operations:
             
         while True : 
             ## validating supplementary id 
-            supplementary_item_id = input("Enter supplementary item ID: ")
+            supplementary_item_id = input("Enter supplementary item ID or Bundle ID: ")
             if supplementary_item_id  in SupplementaryItems.keys():
                 self.supplementary_item_id = supplementary_item_id 
+                self.is_bundle=  False
                 break
+            elif supplementary_item_id in BundleItems.keys():
+                self.supplementary_item_id =  supplementary_item_id
+                self.is_bundle = True 
+                break 
             ## 
             else:
                 print("[INFO] You entered incorrect supplementary Item ")
         
-        
-        self.supplementary_item_qty = int(input("Enter supplementary item quantity: "))
+        if self.is_bundle == True :
+            self.supplementary_item_qty =  1 
+        else:
+            
+            self.supplementary_item_qty = int(input("Enter supplementary item quantity: "))
         
         
         user_exist =  R.find_guest(name=self.guest_name)
@@ -491,14 +506,19 @@ class Operations:
             print(f"User registered succesfully with ID  : {g_id} and apartment ID : {self.apartment_id}")
         else:
             
-            #  IF THE USER ALREADY EXSIST 
-            total_cost, discount, new_price =  Order(user_exist.id,[self.supplementary_item_id],self.supplementary_item_qty).compute_cost()
+            #  IF THE USER ALREADY EXIST 
+            total_cost, discount, new_price =  Order(user_exist.id,[self.supplementary_item_id],self.supplementary_item_qty,self.is_bundle).compute_cost()
             
             apt_rate_ =  apt_rates[self.apartment_id[3:]]
             
-            supp_item_  =  SupplementaryItems[self.supplementary_item_id]
-      
-            supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.get_name(),self.supplementary_item_qty,supp_item_.get_price())]
+            
+            if self.is_bundle == False:
+                supp_item_  =  SupplementaryItems[self.supplementary_item_id]
+                supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.get_name(),self.supplementary_item_qty,supp_item_.get_price())]
+            
+            else:
+                supp_item_ =  BundleItems[self.supplementary_item_id]
+                supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.name,self.supplementary_item_qty,supp_item_.price )]
             nights = (self.check_out - self.check_in).days
             
             earned = user_exist.calculate_reward(apt_rate_ + total_cost)
