@@ -27,7 +27,7 @@ class Guest:
 
     # Method to calculate reward based on total cost
     def calculate_reward(self, total_cost):
-        reward_points = round(total_cost * self.__reward_rate)
+        reward_points = round(total_cost * self.reward_rate)
         return reward_points
         
     
@@ -43,19 +43,19 @@ class Guest:
 
     # Method to display guest information
     def display_info(self):
-        print(f"ID: {self.__id}")
-        print(f"Name: {self.__name}")
-        print(f"Reward Points: {self.__reward}")
-        print(f"Reward Rate: {self.__reward_rate * 100}%")
-        print(f"Redeem Rate: {self.__redeem_rate * 100}%")
+        print(f"ID: {self.id}")
+        print(f"Name: {self.name}")
+        print(f"Reward Points: {self.reward_points}")
+        print(f"Reward Rate: {self.reward_rate * 100}%")
+        print(f"Redeem Rate: {self.redeem_rate * 100}%")
 
 
     def set_reward_rate(self, rate_percent):
-        self.__reward_rate = rate_percent / 100.0
+        self.reward_rate = rate_percent / 100.0
 
 
     def set_redeem_rate(self, rate_percent):
-        self.__redeem_rate = rate_percent / 100.0
+        self.redeem_rate = rate_percent / 100.0
         
 
 
@@ -120,7 +120,30 @@ class ApartmentUnit(Product):
         print(f"Name: {self.get_name()}")
         print(f"Price per night: {self.get_price()}")
         print(f"Capacity: {self.__capacity} guests")
+        
+        
+        
+class Bundle:
+    def __init__(self, bundle_id, name, components, price):
+        self.id = bundle_id
+        self.name = name
+        self.components = components  # list of product IDs
+        self.price = price
 
+    def display_components(self):
+        # Count occurrences of each component , replace with other functionality but now good 
+        from collections import Counter
+        counts = Counter(self.components)
+        # Format as "2 x SI2" if more than 1
+        return ', '.join([f"{v} x {k}" if v > 1 else k for k, v in counts.items()])
+    
+
+    
+    def display(self):
+        print(f"{self.id}\t{self.name}\t{self.display_components()}\t{self.price}")
+        
+        
+        
 # --------------- Supplemetary Item ----------------
 class SupplementaryItem(Product):
     def __init__(self, product_id, name, price):
@@ -157,8 +180,9 @@ def generate_receipt(
     print("-"*80)
     print("Supplementary items")
     print(f"{'ID':<10}{'Name':<20}{'Qty':<10}{'Unit Price $':<15}{'Cost $':<10}")
-    for (sid, name, qty, unit_price )in supplementary_items:
-        print(f"{sid:<10}{name:<20}{qty:<10}{unit_price:<15.2f}")
+    for (sid, name, qty, unit_price) in supplementary_items:
+        print(f"{sid:<10}{name:<20}{qty:<10}{unit_price:<15.2f}{qty*unit_price:<10.2f}")
+
     print(f"Sub-total: $ {supp_sub_total:.2f}")
     print("-"*80)
     print(f"Total cost: $ {total_cost:.2f} (AUD)")
@@ -183,6 +207,9 @@ class Records :
         self.ApartmentUnits  = {}
         self.apt_list=  list(self.ApartmentUnits.keys())
         
+        
+        self.bundles =  []
+        
     
     def read_csv(self,filename):
 
@@ -200,6 +227,9 @@ class Records :
                 self.Guests[g_id].set_redeem_rate(g_redeem_r)
     
     def read_products(self,filename):
+        
+        self.bundles.clear()
+        
         with open("products.csv","r") as f:
             product_file =  csv.reader(f)
             for product in product_file:
@@ -218,12 +248,15 @@ class Records :
                     a_price = float(product[2]) 
                     a_capacity = int(product[3])  # assuming 4th column is capacity
                     self.ApartmentUnits[a_item] = ApartmentUnit(a_item, a_name, a_price, a_capacity)
-
-                    
-                    
-            
-
-    
+                
+                if product[0].startswith("B"):  # assuming bundles IDs start with B
+            # last column is price, first is bundle ID, second is name
+                    bundle_id = product[0]
+                    name = product[1]
+                    components = product[2:-1]  # all columns except ID, Name, Price
+                    price = float(product[-1])
+                    self.bundles.append(Bundle(bundle_id, name, components, price))
+        
     def find_guest(self,id=None, name=None):
         
         guest_found  = None 
@@ -241,20 +274,22 @@ class Records :
             
         return guest_found
     
-    def find_product(self,id=None, name=None):
-        
-        product_found  = None 
-        # Guest found via id 
-        if (id != None ) and id in self.supp_list:
-            product_found =  self.SupplementaryItems[id]
-        
-        # Guest found via name 
-        elif (name != None):
-            for id_hover,product_ in self.SupplementaryItems.items():
-                if product_.name == name:
-                    product_found =  self.SupplementaryItems[id_hover]
-            
+    def find_product(self, id=None, name=None):
+        product_found = None
+
+        # Find by ID
+        if id is not None and id in self.SupplementaryItems:
+            product_found = self.SupplementaryItems[id]
+
+        # Find by name
+        elif name is not None:
+            for p_id, product_ in self.SupplementaryItems.items():
+                if product_.get_name() == name:
+                    product_found = product_
+                    break
+
         return product_found
+
         
     
     
@@ -289,6 +324,35 @@ Reward Rate : {g.reward_rate}
                 p.display_info()
                 print("*"*45)
             print("="*45)
+    
+    
+    def list_bundles(self):
+        if not self.bundles:
+            print("⚠️ No bundles found in products.csv")
+            return
+        
+        print(f"{'ID':<10}{'Name':<45}{'Components':<40}{'Price':<10}")
+        print("-"*105)
+        
+        for bundle in self.bundles:
+            print(f"{bundle.id:<10}{bundle.name:<45}{bundle.display_components():<40}{bundle.price:<10.2f}")
+    
+    
+    def display_existing_products(self):
+        print("\nExisting Products:")
+        print("------------------")
+
+        # Display normal products (apartments + supplementary)
+        ##self.list_products("apartment")## Not displaying apartments 
+        self.list_products("supplementary")
+
+        # Then display bundles
+        self.list_bundles()
+
+        
+        
+
+
             
             
             
@@ -297,6 +361,12 @@ R  = Records()
 R.read_csv("guests.csv") ;  R.read_products("products.csv")
 Guests  = R.Guests
 SupplementaryItems = R.SupplementaryItems
+BundleItems =  R.bundles
+
+
+
+
+
 
 # -------  Order -------------
 
@@ -333,15 +403,75 @@ class Operations:
         
         
         
+        ## validating guest name until it contains only alpha chars 
+        while True : 
+            
+            guest_name = input("Enter guest name: ")
+            if guest_name.isalpha() == True:
+                self.guest_name= guest_name
+                break
+            else:
+                print("[INFO] Please enter the valid Guest name , it contains non-alpha chars !!")
+            
         
-        
-        self.guest_name = input("Enter guest name: ")
         self.num_guests = int(input("Enter number of guests: "))
-        self.apartment_id = input("Enter apartment ID: ")
-        self.check_in = input("Enter check-in date (YYYY-MM-DD): ")
-        self.check_out = input("Enter check-out date (YYYY-MM-DD): ")
-        self.booking_date = input("Enter booking date (YYYY-MM-DD): ")
-        self.supplementary_item_id = input("Enter supplementary item ID: ")
+        
+        
+        
+        
+        while True : 
+            
+            
+            ## validating apartment id 
+            # 1. if it exists in our rate lists 
+            # 2. It is not booked 
+            
+            apartment_id = input("Enter apartment ID: ")
+            
+            
+            if apartment_id[3:] in apt_rates.keys():
+                if apartment_id  in R.ApartmentUnits.keys():
+                    print("[INFO] this apartment ID is already booked , pls choose another ID !!")
+                else:
+                    self.apartment_id =  apartment_id
+                    break 
+                    
+                
+            else:
+                print("[INFO] please enter valid apartment ID , we have 1.swan 2. duck  3. goose")
+        
+        
+        while True :
+            
+            check_in = datetime.strptime(input("Enter check-in date (YYYY-MM-DD): "),"%Y-%m-%d")
+            check_out = datetime.strptime(input("Enter check-out date (YYYY-MM-DD): "),"%Y-%m-%d")
+            booking_date = datetime.now()
+            if check_in < booking_date:
+                print("[INFO] Check-in date cannot be earlier than booking date ")
+            elif check_out < booking_date:
+                print("[INFO] Check-out date cannot be earlier than booking date.")
+            elif check_out < check_in:
+                print("[INFO] Check-out date cannot be earlier than check-in date.")
+            elif check_out == check_in:
+                print("[INFO] Check-in and check-out dates cannot be the same.")
+            else:
+                self.check_in = check_in
+                self.check_out = check_out
+                self.booking_date =  booking_date
+                break 
+            
+            
+        while True : 
+            ## validating supplementary id 
+            supplementary_item_id = input("Enter supplementary item ID: ")
+            if supplementary_item_id  in SupplementaryItems.keys():
+                self.supplementary_item_id = supplementary_item_id 
+                break
+            ## 
+            else:
+                print("[INFO] You entered incorrect supplementary Item ")
+        
+        
         self.supplementary_item_qty = int(input("Enter supplementary item quantity: "))
         
         
@@ -369,7 +499,12 @@ class Operations:
             supp_item_  =  SupplementaryItems[self.supplementary_item_id]
       
             supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.get_name(),self.supplementary_item_qty,supp_item_.get_price())]
-            nights = (datetime.strptime(self.check_out, "%Y-%m-%d") -datetime.strptime(self.check_in, "%Y-%m-%d")).days
+            nights = (self.check_out - self.check_in).days
+            
+            earned = user_exist.calculate_reward(apt_rate_ + total_cost)
+            user_exist.update_reward(earned)
+
+
             
             
             apt_sub_total =  apt_rate_ * nights 
@@ -390,7 +525,7 @@ class Operations:
                 reward_points=user_exist.reward_points,
                 discount=discount,
                 total_cost=apt_rate_+total_cost,
-                earned_rewards=user_exist.get_reward(apt_rate_ + total_cost)
+                earned_rewards=earned 
             )
     def display_menu(self):
         while True:
@@ -401,7 +536,8 @@ class Operations:
             print("2. Display existing guests")
             print("3. Display existing apartment units")
             print("4. Display existing supplementary items")
-            print("5. Exit")
+            print("5. Display existing products ")
+            print("6. Exit")
             print("="*40)
 
             choice = input("Enter your choice (1-5): ").strip()
@@ -415,6 +551,9 @@ class Operations:
             elif choice == "4":
                 R.list_products("supplementary")
             elif choice == "5":
+                R.display_existing_products()
+                
+            elif choice == "6":
                 print("Exiting program. Thank you!")
                 break
             else:
@@ -435,6 +574,12 @@ class Operations:
 
 
 Operations().display_menu()
+
+
+# R =  Records()
+# R.read_products("products.csv")
+
+# R.bundles[0].display()
 
 
 
