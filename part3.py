@@ -898,7 +898,7 @@ class Operations:
             print("="*40)
 
 
-            choice = input("Enter your choice (1-9): ").strip()
+            choice = input("Enter your choice (1-11): ").strip()
             
             
             # format {"choice_number" : [function name , function parameters ]}

@@ -1,4 +1,4 @@
-import csv
+import csv,sys 
 from datetime import datetime
 
 
@@ -548,35 +548,50 @@ class Operations:
                 earned_rewards=earned 
             )
     def display_menu(self):
+        
+        
+        menu_items = [
+            "Make a booking",
+            "Display existing guests",
+            "Display existing apartment units",
+            "Display existing supplementary items",
+            "Display existing products",
+            "Exit"
+        ]
+                    
+                    
         while True:
-            print("\n" + "="*40)
             print("🏨 Hotel Management System 🏨")
             print("="*40)
-            print("1. Make a booking")
-            print("2. Display existing guests")
-            print("3. Display existing apartment units")
-            print("4. Display existing supplementary items")
-            print("5. Display existing products ")
-            print("6. Exit")
+            for i, item in enumerate(menu_items, 1):
+                print(f"{i}. {item}")
             print("="*40)
 
-            choice = input("Enter your choice (1-5): ").strip()
 
-            if choice == "1":
-                self.make_booking()
-            elif choice == "2":
-                R.list_guest()
-            elif choice == "3":
-                R.list_products("apartment")
-            elif choice == "4":
-                R.list_products("supplementary")
-            elif choice == "5":
-                R.display_existing_products()
-                
-            elif choice == "6":
-                print("Exiting program. Thank you!")
-                break
-            else:
+            choice = input("Enter your choice (1-6): ").strip()
+            
+            
+            # format {"choice_number" : [function name , function parameters ]}
+            
+            choice_fnx ={"1":[self.make_booking,None],
+                         "2" :[R.list_guest,None],
+                         "3": [R.list_products,"apartment"],
+                         "4" :[R.list_products,"supplementary"],
+                         "5" : [R.display_existing_products,None],
+                         }
+            
+            for choice_id,_  in choice_fnx.items():
+                if choice == choice_id:
+                    fx =  choice_fnx[choice_id][0]
+                    param =  choice_fnx[choice_id][1]
+                    if param != None:
+                        fx(param)
+                    else:
+                        fx()
+                elif choice == str(len(choice_fnx) +  1):
+                    print("Exiting program. Thank you!")
+                    sys.exit() 
+            if choice not in  choice_fnx.keys():
                 print("⚠️ Invalid choice. Please try again.")
             
             
