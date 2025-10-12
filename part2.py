@@ -580,26 +580,9 @@ class Operations:
                 print("⚠️ Invalid choice. Please try again.")
             
             
-        
-
-# Operations().make_booking()
-
-
-# #print(SupplementaryItems["SI3"].get_name())
-
-# # R.list_guest()
-# # R.list_products("apartment")
-
-# # print(R.find_guest(name="James").id)
 
 
 Operations().display_menu()
-
-
-# R =  Records()
-# R.read_products("products.csv")
-
-# R.bundles[0].display()
 
 
 
