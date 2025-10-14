@@ -140,26 +140,26 @@ class Bundle:
         self.components = components  # list of product IDs
         self.price = price
 
-def display_components(self):
-    """
-    Returns a string showing each component and its quantity without using Counter.
-    Example: "2 x SI2, U12, SI1"
-    """
-    counts = {}
-    for comp in self.components:
-        if comp in counts:
-            counts[comp] += 1
-        else:
-            counts[comp] = 1
+    def display_components(self):
+        """
+        Returns a string showing each component and its quantity without using Counter.
+        Example: "2 x SI2, U12, SI1"
+        """
+        counts = {}
+        for comp in self.components:
+            if comp in counts:
+                counts[comp] += 1
+            else:
+                counts[comp] = 1
 
-    formatted = []
-    for comp, qty in counts.items():
-        if qty > 1:
-            formatted.append(f"{qty} x {comp}")
-        else:
-            formatted.append(comp)
-    
-    return ', '.join(formatted)
+        formatted = []
+        for comp, qty in counts.items():
+            if qty > 1:
+                formatted.append(f"{qty} x {comp}")
+            else:
+                formatted.append(comp)
+        
+        return ', '.join(formatted)
 
     
 
