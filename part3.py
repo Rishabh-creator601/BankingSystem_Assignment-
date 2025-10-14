@@ -2,6 +2,16 @@ import csv,sys
 from datetime import datetime
 
 
+
+'''
+NAME : 
+STUDENT ID : 
+Highest level of attempted : All the requirements 
+May misbehave in calcuation of reward points 
+
+'''
+
+
 ## Searching for file
 file_status= False
 
