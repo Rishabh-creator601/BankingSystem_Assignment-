@@ -6,7 +6,7 @@ from datetime import datetime
 '''
 NAME : 
 STUDENT ID : 
-Highest level of attempted : All the requirements 
+Highest level of attempted : except vi part evyerthing is attempted 
 May misbehave in calcuation of reward points and validating of apartment ids 
 
 '''
