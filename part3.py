@@ -328,6 +328,14 @@ class Records :
                     break
 
         return product_found
+    
+    def get_guest(self,name):
+        
+        obj_name = None 
+        for obj in self.Guests.values():
+            if obj.name == name:
+                obj_name = obj 
+        return obj_name
 
         
     
@@ -691,18 +699,7 @@ class Operations:
         
         apt_capacity =  R.ApartmentUnits[self.apartment_id].capacity 
         
-        print("Apartment capacity",apt_capacity)
-        
-        
-    
-
-        
-        
-        
-
-        
-        
-        
+        print("Apartment capacity :",apt_capacity)
         
         
         while True :
@@ -788,7 +785,7 @@ class Operations:
                 extra_bed_price = extra_bed_item.get_price()
                 
                 # Calculate cost for the number of nights
-                extra_bed_cost = extra_bed_price * extra_bed_input * nights
+                extra_bed_cost = extra_bed_price * extra_bed_qty * nights
                 
                 print(f"✅ {extra_bed_input} extra bed(s) added for {nights} night(s).")
                 print(f"Extra bed cost: ${extra_bed_cost:.2f}\n")
@@ -808,99 +805,102 @@ class Operations:
         
         
         # --- Car Park Validation ---
-        if "SI1" in SupplementaryItems:  
-            car_park_item = SupplementaryItems["SI1"]
-            car_park_price = car_park_item.get_price()
 
-            print("\n🚗 Optional: Car Park booking available.")
-            want_parking = input("Would you like to book car park(s)? (Y/N): ").strip().lower()
+        car_park_item = SupplementaryItems["SI1"]
+        car_park_price = car_park_item.get_price()
 
-            if want_parking == 'y':
-                while True:
-                    try:
-                        car_park_qty = int(input("Enter number of car parks required: "))
-                        if car_park_qty <= 0:
-                            print("⚠️ Quantity must be positive.")
-                            continue
-                        break
-                    except ValueError:
-                        print("⚠️ Invalid input. Please enter a valid number.")
-                
+        print("\n🚗 Optional: Car Park booking available.")
+        want_parking = input("Would you like to book car park(s)? (Y/N): ").strip().lower()
 
-                if car_park_qty < nights:
-                    print(f"⚠️ You must book at least {nights} car park(s) (same as number of nights).")
-                    car_park_qty = nights
-                    print(f"✅ Automatically adjusted to {car_park_qty} car park(s).")
+        if want_parking == 'y':
+            while True:
+                try:
+                    car_park_qty = int(input("Enter number of car parks required: "))
+                    if car_park_qty <= 0:
+                        print("⚠️ Quantity must be positive.")
+                        continue
+                    break
+                except ValueError:
+                    print("⚠️ Invalid input. Please enter a valid number.")
+            
 
-                car_park_cost = car_park_price * car_park_qty
-                
+            if car_park_qty < nights:
+                print(f"⚠️ You must book at least {nights} car park(s) (same as number of nights).")
+                car_park_qty = nights
+                print(f"✅ Automatically adjusted to {car_park_qty} car park(s).")
 
-                
-                print(f"✅ Car Park added for {nights} night(s). Total: ${car_park_cost:.2f}\n")
-            else:
-                print("XX No car park added. XX")
-                car_park_cost = 0
+            car_park_cost = car_park_price * car_park_qty
+            
+
+            
+            print(f"✅ Car Park added for {nights} night(s). Total: ${car_park_cost:.2f}\n")
         else:
-            print("⚠️ Car Park item (SI1) not found in supplementary products list!")
+            print("XX No car park added. XX")
             car_park_cost = 0
+            
+        
+        
+        apt_rate_ =  apt_rates[self.apartment_id[3:]]  
+        apt_sub_total =  apt_rate_ * nights 
+        if self.is_bundle == False:
+            supp_item_  =  SupplementaryItems[self.supplementary_item_id]
+            supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.get_name(),self.supplementary_item_qty,supp_item_.get_price())]
+                
+            
+        else:
+            supp_item_ =  BundleItems[self.supplementary_item_id]
+            supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.name,self.supplementary_item_qty,supp_item_.price )]
+            
+            
+        if extra_bed_cost != 0:
+                supp_item_tuple_.append(("SI_extra_bed", " Extra Bed", extra_bed_qty * nights, extra_bed_price))
+            
+        if car_park_cost != 0:
+                supp_item_tuple_.append(("SI1", "Car Park", car_park_qty * nights , car_park_price))
+
 
         
         
         if user_exist== None :
             g_id =  str(len(R.Guests) +  1)
             R.Guests[g_id] =  Guest(g_id,self.guest_name,self.num_guests*30)
-            # print(self.apartment_id[3:])
-
             
-
+            total_cost, discount, new_price =  Order(g_id,[self.supplementary_item_id],self.apartment_id,self.supplementary_item_qty,self.is_bundle).compute_cost()
+            total_cost += extra_bed_cost
+            total_cost += car_park_cost
             
+            earned =  R.Guests[g_id].calculate_reward(apt_rate_ + total_cost)
+            R.Guests[g_id].update_reward(earned)
+   
+            r_points =  Guests[g_id].reward_points 
+
             print(f"User registered succesfully with ID  : {g_id} || Name : {self.guest_name} || apartment ID : {self.apartment_id}")
+            
+            generate_receipt(
+                guest_name=self.guest_name,number_of_guests=self.num_guests,
+                apartment_name=self.apartment_id[3:],apartment_rate=apt_rate_,
+                checkin_date=self.check_in,checkout_date=self.check_out,
+                nights=nights,supplementary_items=supp_item_tuple_,
+                booking_date=self.booking_date,apartment_sub_total=apt_sub_total,
+                supp_sub_total=total_cost,total_cost=total_cost +  apt_sub_total,
+                reward_points=r_points,discount=discount,
+                final_total= new_price +  apt_sub_total,earned_rewards=earned
+            )
             
             
         else:
             
             #  IF THE USER ALREADY EXSIST 
             print(f"Hi {self.guest_name} Welcome Back again !")
-            
-            
-            for obj in Guests.values():
-                if obj.name == self.guest_name:
-                    print("YOUR CURRENT REWARD POINTS: ",obj.reward_points)
-                    
-                    
+            print("YOUR CURRENT REWARD POINTS: ",R.get_guest(self.guest_name).reward_points  )
+        
+                         
             total_cost, discount, new_price =  Order(user_exist.id,[self.supplementary_item_id],self.apartment_id,self.supplementary_item_qty,self.is_bundle).compute_cost()
             total_cost += extra_bed_cost
             total_cost += car_park_cost
-            
-            
-            apt_rate_ =  apt_rates[self.apartment_id[3:]]
-            
-            
-            if self.is_bundle == False:
-                supp_item_  =  SupplementaryItems[self.supplementary_item_id]
-                supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.get_name(),self.supplementary_item_qty,supp_item_.get_price())]
-                
-            
-            else:
-                supp_item_ =  BundleItems[self.supplementary_item_id]
-                supp_item_tuple_ = [(self.supplementary_item_id,supp_item_.name,self.supplementary_item_qty,supp_item_.price )]
-            
-            
-            if extra_bed_cost != 0:
-                supp_item_tuple_.append(("SI_extra_bed", " Extra Bed", extra_bed_input * nights, extra_bed_price))
-            
-            if car_park_cost != 0:
-                supp_item_tuple_.append(("SI1", "Car Park", car_park_qty, car_park_price))
-                
-
-            
+    
             earned = user_exist.calculate_reward(apt_rate_ + total_cost)
             user_exist.update_reward(earned)
-
-
-            
-            
-            apt_sub_total =  apt_rate_ * nights 
             
             generate_receipt(
                 guest_name=user_exist.name,number_of_guests=self.num_guests,apartment_name=self.apartment_id[3:],
@@ -910,6 +910,8 @@ class Operations:
                 reward_points=user_exist.reward_points,discount=discount,total_cost=apt_rate_+total_cost,
                 earned_rewards=earned 
             )
+            
+            
     def display_menu(self):
         
         
