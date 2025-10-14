@@ -2,6 +2,17 @@ import csv
 from datetime import datetime
 
 
+
+
+'''
+NAME : 
+STUDENT ID : 
+Highest level of attempted : All the requirements 
+May misbehave in calcuation of reward points 
+
+'''
+
+
 ## Searching for file
 file_status= False
 
@@ -340,7 +351,7 @@ class Operations:
         self.apartment_id = input("Enter apartment ID: ")
         self.check_in = input("Enter check-in date (YYYY-MM-DD): ")
         self.check_out = input("Enter check-out date (YYYY-MM-DD): ")
-        self.length_stay =  input("Enter Stay Length (Ex :  5) : ")
+        self.length_stay =  int(input("Enter Stay Length (Ex :  5) : "))
         self.booking_date = input("Enter booking date (YYYY-MM-DD): ")
         self.supplementary_item_id = input("Enter supplementary item ID: ")
         self.supplementary_item_qty = int(input("Enter supplementary item quantity: "))
