@@ -1,1 +1,0 @@
-Operations().display_menu()
