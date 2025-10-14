@@ -839,7 +839,13 @@ class Operations:
             
         else:
             
-            #  IF THE USER ALREADY EXIST 
+            #  IF THE USER ALREADY EXSIST 
+            print(f"Hi {self.guest_name} Welcome Back again !")
+            
+            
+            for obj in Guests.values():
+                if obj.name == self.guest_name:
+                    print("YOUR CURRENT REWARD POINTS: ",obj.reward_points)
             total_cost, discount, new_price =  Order(user_exist.id,[self.supplementary_item_id],self.apartment_id,self.supplementary_item_qty,self.is_bundle).compute_cost()
             total_cost += extra_bed_cost
             total_cost += car_park_cost
@@ -949,7 +955,6 @@ class Operations:
 
 
 Operations().display_menu()
-
 
 
 
