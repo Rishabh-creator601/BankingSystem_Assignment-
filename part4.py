@@ -39,9 +39,9 @@ print(f" Guests => {guest_file}  |  Products => {product_file}  |  Orders => {or
 
 
 
-def read_csv_file(filename):
+def read_csv_file(filename,encoding="utf-8"):
     csvFile = None 
-    with open(filename, mode ='r') as file:
+    with open(filename, mode ='r',encoding=encoding) as file:
         csvFile = csv.reader(file)
         data = list(csvFile)
     return data
@@ -50,7 +50,7 @@ def read_csv_file(filename):
 
 ## Searching for file
 try :
-    guests =  read_csv_file(guest_file)
+    guests =  read_csv_file(guest_file,encoding="utf-8-sig")
     print(" ✔️ File Found and loaded ")
 except :
     print("⚠️⚠️ Warning : File not found , please insert it in local directory !!!")
@@ -283,10 +283,10 @@ class Records :
         
     
     def read_csv(self, filename):
-        for g_id, g_name, g_r_rate, g_r, g_redeem_r in read_csv_file(filename):
+        for g_id, g_name, g_r_rate, g_r, g_redeem_r in read_csv_file(filename,encoding="utf-8-sig"):
             guest = Guest(int(g_id), g_name, int(g_r))
-            guest.set_reward_rate(int(g_r_rate))
-            guest.set_redeem_rate(int(g_redeem_r))
+            guest.set_reward_rate(float(g_r_rate))
+            guest.set_redeem_rate(float(g_redeem_r))
             self.Guests[int(g_id)] = guest
 
     
@@ -300,7 +300,7 @@ class Records :
                 self.SupplementaryItems[pid] = SupplementaryItem(pid, p[1], float(p[2]))
 
             elif pid.startswith("U"):
-                self.ApartmentUnits[pid] = ApartmentUnit(pid, p[1], float(p[2]), int(p[3]))
+                self.ApartmentUnits[pid] = ApartmentUnit(pid, p[1], float(p[2]), float(p[3]))
 
             elif pid.startswith("B"):
                 bundle_id, name, *components, price = p
@@ -501,6 +501,61 @@ Reward Rate : {g.reward_rate}
             print(f"{'Order'+str(order_id):<10}{product_details:<50}{order.total_cost:<20.1f}{order.reward_points:<15}")
 
         print("-" * 95)
+
+
+    def save_orders(self, filename="orders.csv"):
+        """Save all guest orders to a CSV file in the specified format."""
+        try:
+            with open(filename, "w", newline="") as f:
+                writer = csv.writer(f)
+                for guest_name, order in self.user_orders.items():
+                    # Convert dict like {'U12swan':2, 'SI2':4, 'SI1':2} → ["2 x U12swan", "4 x SI2", "2 x SI1"]
+                    products_str = [f"{qty} x {pid}" for pid, qty in order.products.items()]
+                    earned_rewards =  self.get_guest(guest_name).calculate_reward(order.total_cost)
+                    row = [
+                        guest_name,
+                        *products_str,
+                        f"{order.total_cost:.2f}",
+                        earned_rewards,
+                        order.booking_format,
+                    ]
+                    writer.writerow(row)
+
+            print(f"✅ Orders successfully saved to '{filename}'")
+        except Exception as e:
+            print(f"⚠️ Error saving orders: {e}")
+    def save_guests(self, filename="guests.csv"):
+
+        with open(filename, "w", newline="") as f:
+            writer = csv.writer(f)
+            for g in self.Guests.values():
+                writer.writerow([
+                    g.id, g.name, g.reward_rate, g.reward_points , g.redeem_rate
+                ])
+        
+        print("✅ GUESTS FILE UPDATED ")
+    
+    def save_products(self, filename="products.csv"):
+        
+        with open(filename, "w", newline="") as f:
+            writer = csv.writer(f)
+
+            # Supplementary items
+            for s in self.SupplementaryItems.values():
+                writer.writerow([s.id, s.name, s.price])
+
+            # Apartment units
+            for u in self.ApartmentUnits.values():
+                writer.writerow([u.id, u.name, u.price, u.capacity])
+
+            # Bundles
+            for b in self.bundles.values():
+                writer.writerow([b.id, b.name, *b.components, b.price])
+        
+        print("✅ Producst file saved successfully !!")
+
+
+
         
         
 R  = Records()
@@ -1031,6 +1086,9 @@ class Operations:
                     else:
                         fx()
                 elif choice == str(len(choice_fnx) +  1):
+                    R.save_guests(guest_file)
+                    R.save_orders(order_file)
+                    R.save_products(product_file)
                     print("Exiting program. Thank you!")
                     sys.exit() 
             if choice not in  choice_fnx.keys():
