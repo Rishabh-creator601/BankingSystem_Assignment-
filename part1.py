@@ -324,6 +324,7 @@ class Order:
     def compute_cost(self):
 
         for i in self.product_ids:
+            print(i)
             self.total_cost +=  SupplementaryItems[i].get_price() * self.quantity
         
         
