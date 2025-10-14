@@ -139,12 +139,27 @@ class Bundle:
         self.components = components  # list of product IDs
         self.price = price
 
-    def display_components(self):
-        # Count occurrences of each component , replace with other functionality but now good 
-        from collections import Counter
-        counts = Counter(self.components)
-        # Format as "2 x SI2" if more than 1
-        return ', '.join([f"{v} x {k}" if v > 1 else k for k, v in counts.items()])
+def display_components(self):
+    """
+    Returns a string showing each component and its quantity without using Counter.
+    Example: "2 x SI2, U12, SI1"
+    """
+    counts = {}
+    for comp in self.components:
+        if comp in counts:
+            counts[comp] += 1
+        else:
+            counts[comp] = 1
+
+    formatted = []
+    for comp, qty in counts.items():
+        if qty > 1:
+            formatted.append(f"{qty} x {comp}")
+        else:
+            formatted.append(comp)
+    
+    return ', '.join(formatted)
+
     
 
     

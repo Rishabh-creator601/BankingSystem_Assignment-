@@ -140,12 +140,27 @@ class Bundle:
         self.components = components  # list of product IDs
         self.price = price
 
-    def display_components(self):
-        # Count occurrences of each component , replace with other functionality but now good 
-        from collections import Counter
-        counts = Counter(self.components)
-        # Format as "2 x SI2" if more than 1
-        return ', '.join([f"{v} x {k}" if v > 1 else k for k, v in counts.items()])
+def display_components(self):
+    """
+    Returns a string showing each component and its quantity without using Counter.
+    Example: "2 x SI2, U12, SI1"
+    """
+    counts = {}
+    for comp in self.components:
+        if comp in counts:
+            counts[comp] += 1
+        else:
+            counts[comp] = 1
+
+    formatted = []
+    for comp, qty in counts.items():
+        if qty > 1:
+            formatted.append(f"{qty} x {comp}")
+        else:
+            formatted.append(comp)
+    
+    return ', '.join(formatted)
+
     
 
     
@@ -846,6 +861,8 @@ class Operations:
             for obj in Guests.values():
                 if obj.name == self.guest_name:
                     print("YOUR CURRENT REWARD POINTS: ",obj.reward_points)
+                    
+                    
             total_cost, discount, new_price =  Order(user_exist.id,[self.supplementary_item_id],self.apartment_id,self.supplementary_item_qty,self.is_bundle).compute_cost()
             total_cost += extra_bed_cost
             total_cost += car_park_cost
