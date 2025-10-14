@@ -12,13 +12,21 @@ May misbehave in calcuation of reward points
 '''
 
 
+def read_csv_file(filename):
+    csvFile = None 
+    with open(filename, mode ='r') as file:
+        csvFile = csv.reader(file)
+        data = list(csvFile)
+    return data
+
+
+
 ## Searching for file
 file_status= False
 
 try :
-    with open("guests.csv","r") as f :
-        file_status = True
-        guests =  csv.reader(f)
+    guests =  read_csv_file("guests.csv")
+    if guests:
         print(" ✔️ File Found and loaded ")
 except :
     file_status = False
@@ -242,54 +250,51 @@ class Records :
     
     def read_csv(self,filename):
 
-        with open("guests.csv","r") as f :
-
-            guests_file =  csv.reader(f,delimiter=",")
-            for g in guests_file :
-                g_id =  int(g[0])
-                g_name =  g[1]
-                g_r_rate =  int(g[2])
-                g_r =  int(g[3])
-                g_redeem_r = int(g[4])
-                self.Guests[g_id] = Guest(g_id,g_name,g_r)
-                self.Guests[g_id].set_reward_rate(g_r_rate)
-                self.Guests[g_id].set_redeem_rate(g_redeem_r)
+        guests_file =  read_csv_file(filename)
+        for g in guests_file :
+            g_id =  int(g[0])
+            g_name =  g[1]
+            g_r_rate =  int(g[2])
+            g_r =  int(g[3])
+            g_redeem_r = int(g[4])
+            self.Guests[g_id] = Guest(g_id,g_name,g_r)
+            self.Guests[g_id].set_reward_rate(g_r_rate)
+            self.Guests[g_id].set_redeem_rate(g_redeem_r)
     
     def read_products(self,filename):
         
         self.bundles.clear()
         
-        with open("products.csv","r") as f:
-            product_file =  csv.reader(f)
-            for product in product_file:
-                
-                # for adding product like breakfast , car park
-                if product[0].startswith("S"):
-                    s_item  = product[0]
-                    s_name =  product[1]
-                    s_rate  = float(product[2])
-                    self.SupplementaryItems[s_item] = SupplementaryItem(s_item,s_name,s_rate)
-                    
-                # for adding Apartment Unit like U12 , U20 etc 
-                if product[0].startswith("U"):
-                    a_item = product[0]
-                    a_name = product[1]
-                    a_price = float(product[2]) 
-                    a_capacity = int(product[3])  # assuming 4th column is capacity
-                    self.ApartmentUnits[a_item] = ApartmentUnit(a_item, a_name, a_price, a_capacity)
-                
-                if product[0].startswith("B"):  # assuming bundles IDs start with B
-            # last column is price, first is bundle ID, second is name
-                    bundle_id = product[0]
-                    name = product[1]
-                    components = product[2:-1]  
-                    price = float(product[-1])
-                    bundle_obj = Bundle(bundle_id, name, components, price)
-                    self.bundles[bundle_id] =  bundle_obj
+        product_file = read_csv_file(filename) 
+        for product in product_file:
             
+            # for adding product like breakfast , car park
+            if product[0].startswith("S"):
+                s_item  = product[0]
+                s_name =  product[1]
+                s_rate  = float(product[2])
+                self.SupplementaryItems[s_item] = SupplementaryItem(s_item,s_name,s_rate)
+                
+            # for adding Apartment Unit like U12 , U20 etc 
+            if product[0].startswith("U"):
+                a_item = product[0]
+                a_name = product[1]
+                a_price = float(product[2]) 
+                a_capacity = int(product[3])  # assuming 4th column is capacity
+                self.ApartmentUnits[a_item] = ApartmentUnit(a_item, a_name, a_price, a_capacity)
             
-            ## adding extra bed as a supplementary item 
-            self.SupplementaryItems["SI_extra_bed"] =  SupplementaryItem("SI_extra_bed"," Extra Bed",50)
+            if product[0].startswith("B"):  # assuming bundles IDs start with B
+        # last column is price, first is bundle ID, second is name
+                bundle_id = product[0]
+                name = product[1]
+                components = product[2:-1]  
+                price = float(product[-1])
+                bundle_obj = Bundle(bundle_id, name, components, price)
+                self.bundles[bundle_id] =  bundle_obj
+        
+        
+        ## adding extra bed as a supplementary item 
+        self.SupplementaryItems["SI_extra_bed"] =  SupplementaryItem("SI_extra_bed"," Extra Bed",50)
         
     def find_guest(self,id=None, name=None):
         
