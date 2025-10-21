@@ -1,0 +1,20 @@
+SI1, Car Park,25.0
+SI2, Breakfast,25.3
+SI3, Tooth brush,10.0
+SI4, Tooth paste,5.0
+SI5, Shampoo,20.5
+SI6, Double extra bed (2 people),50.0
+SI_extra_bed, Extra Bed,50
+SI8,bathing,890.0
+U12swan, Unit 12 Swan Building,200.0,3.0
+U13swan, Unit 13 Swan Building,190.7,2.0
+U20goose, Unit 20 Goose Building,165.0,1.0
+U21goose, Unit 21 Goose Building,175.0,2.0
+U22goose, Unit 22 Goose Building,185.0,3.0
+U62duck, Unit 62 Duck Building,134.5,2.0
+U63duck, Unit 63 Duck Building,148.0,3.0
+U23goose,U23goose Building ,145.2,3
+U23swan,450.0,95.0,8.0
+U56goose,U56goose Building ,145.2,3
+B1, Bed and breakfast for two, U12swan, SI2, SI2, SI1,220.48
+B2, Bed and breakfast family deluxe, U22goose, SI2, SI2, SI2, SI2, SI1, SI6,288.96
