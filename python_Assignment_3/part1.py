@@ -14,6 +14,10 @@ Please make modifications to all the classes to match with requirements provided
 import random, csv ,sys 
 
 
+
+DIRECTIONS = ["west","north","east","south"]
+
+
 # functionality for reading csv file 
 def read_csv(filename):
     try :
@@ -112,11 +116,12 @@ class Pymon(Creature):
         self._energy_count  =  3 
         self.total_energy_count =  3 
         self._speed =  1
+
     
     
     def move(self,direction):
         
-        if direction in ["west","north","east","south"]:
+        if direction in DIRECTIONS:
             if self._current_location.doors[direction] != None :
                 print(f"{self._name} moved from {self._current_location.name} To {self._current_location[direction.name]}")
                 self._current_location = self._current_location.doors[direction]
@@ -183,7 +188,7 @@ class Record:
     # fx for connecting location to a direction 
     def connect_loc(self,loc1,loc2,direction):
         if loc1 in self.locations.keys() and loc2 in self.locations.keys():
-            if direction in ["west","north","east","south"]:
+            if direction in DIRECTIONS:
                 self.locations[loc1].connect(direction=direction,location=self.locations[loc2])
     
     # fx for placing creature to a location 
@@ -253,7 +258,7 @@ class Operations:
             elif user_input == 3:
                 dir = input("Moving to which direction? ").strip().lower()
                 
-                if dir in ["west", "north", "east", "south"]:
+                if dir in DIRECTIONS:
                     next_loc = self.curr_loc.doors.get(dir)
                     
                     if next_loc is None:
@@ -272,6 +277,7 @@ class Operations:
                     print(f"Direction '{dir}' is invalid.")
             
             elif user_input == 4 :
+                print("Exiting the Game !!")
                 sys.exit()
         
         
