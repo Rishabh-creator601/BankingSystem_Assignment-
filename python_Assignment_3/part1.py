@@ -103,6 +103,9 @@ class Creature:
         return self._name
     
     
+
+        
+    
     
 class Pymon(Creature):
     def __init__(self, name = "Pymon name",desc= None , location=None):
@@ -161,27 +164,25 @@ class Record:
     def __init__(self):
         locations_csv  = read_csv("locations.csv")
         creatures_csv  =read_csv("creatures.csv")
+        items_csv = read_csv("items.csv")
         self.locations = {}
         self.creatures = {}
-        
     
         for location in locations_csv :
             name, desc, west , north, east, south =  location
             self.locations[name] =  Location(name=name,desc=desc,w=west,n=north,s=south,e=east)
-            
 
-            
             
         for creature in creatures_csv:
             name,desc,adoptable,speed =  creature
             normal =  True if adoptable == "no" else False
             self.creatures[name] = Pymon(name,desc=desc,location=None)
             self.creatures[name].speed =  speed 
-            self.creatures[name].normal = normal
-        
-        
+            self.creatures[name].normal = normal 
+                
         print(f"Added Locations : {list(self.locations.keys())}")
         print(f"Added Creatures : {list(self.creatures.keys())}")
+
     
 
     
@@ -198,6 +199,8 @@ class Record:
             self.locations[location].add_creature(self.creatures[name])
         else:
             print(f"Either name : {name} ||  Location : {location} not found ")
+    
+
             
         
 class Operations:
