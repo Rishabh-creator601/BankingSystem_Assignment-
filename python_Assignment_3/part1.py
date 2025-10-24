@@ -284,7 +284,7 @@ class Operations:
         
         
         
-
-O = Operations()
-O.initial_setup()
-O.start_game()
+if __name__ == "__main__":
+    O = Operations()
+    O.initial_setup()
+    O.start_game()

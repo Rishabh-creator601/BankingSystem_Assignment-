@@ -513,11 +513,9 @@ class Operations:
                 print("Enter a Valid Argument !!")
         
         
-        
-## START FROM CHALLENGE A CREATURE stage 2 
-
-O = Operations()
-O.initial_setup()
-O.start_game()
+if __name__ == "__main__":
+    O = Operations()
+    O.initial_setup()
+    O.start_game()
 
 
