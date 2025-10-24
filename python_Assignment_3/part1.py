@@ -1,11 +1,10 @@
 
 """
-Created on Wed Oct 16 22:29:55 2024
+
 Pymon skeleton game
-Please make modifications to all the classes to match with requirements provided in the assignment spec document
-@author: dipto
+@author: Raman Pandey 
 @student_id : 
-@highest_level_attempted (P/C/D/HD):
+@highest_level_attempted (P/C/D/HD): HD 
 
 - Reflection:
 - Reference:
