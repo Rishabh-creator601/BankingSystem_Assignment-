@@ -15,7 +15,13 @@ import random, csv ,sys ,time
 
 
 
-DIRECTIONS = ["west","north","east","south"]
+
+
+#you may use, extend and modify the following random generator
+def generate_random_number(min =0, max_number = 1):
+    r = random.randint(min,max_number)
+    return r 
+
 
 
 # functionality for reading csv file 
@@ -27,14 +33,6 @@ def read_csv(filename):
         return data[1:]  # skipping header 
     except:
         print("[INFO]  FILE DOES NOT EXISTS ")
-
-
-#you may use, extend and modify the following random generator
-def generate_random_number(min =0, max_number = 1):
-    r = random.randint(min,max_number)
-    return r 
-
-    
 
     
 class Item:
@@ -124,8 +122,7 @@ class Creature:
         return self._name
     
     
-
-    
+DIRECTIONS = ["west","north","east","south"]
     
     
 class Pymon(Creature):
