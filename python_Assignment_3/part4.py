@@ -10,7 +10,7 @@ Pymon skeleton game
 
 """
 
-import random, csv ,sys ,time
+import random, csv ,sys ,time,datetime
 
 
 
@@ -19,6 +19,11 @@ import random, csv ,sys ,time
 def generate_random_number(min =0, max_number = 1):
     r = random.randint(min,max_number)
     return r 
+
+
+def choose_random(dict_ : dict ):
+    
+    return dict_[random.choice(list(dict_.keys()))]
 
 
 
@@ -105,6 +110,23 @@ class Location:
         for j in self.items:
             if j.pickable.strip() == "yes":
                 print(f"Hi player , I am {j.name} ,{j.desc} ")
+    
+    def search_creature(self,name : str):
+        obj = None
+        for c in self.creatures:
+            if c.name == name :
+                obj =  c
+                break
+        return obj 
+    
+    def search_item(self,name : str):
+        obj = None
+        for c in self.items:
+            if c.name == name :
+                obj =  c
+                break
+        return obj 
+        
         
         
 
@@ -137,9 +159,11 @@ class Pymon(Creature):
         self.inventory = []
         self.min_luck_factor  = 20 
         self.max_luck_factor =  50 
-        self.race_range = 100 
+        self.race_range = 30 
         self.pogo_stick = False
         self.step_count  = 0
+        self.stats = []
+        self.status_opps ={"win":"lose","lose":"win","tie":"tie"}
     
     def move(self, direction):
         try :
@@ -194,12 +218,9 @@ class Pymon(Creature):
     def energy(self,new_count):
         self._energy_count =  new_count
     
-    
     def express_urself(self):
         print(f"My name is {self._name}, I am a {self.desc} ,My energy level is  {self._energy_count}/{self.total_energy_count}")
-    
-    def pick_item(self,obj : Item):
-        self.inventory.append(obj)
+
     
     def calculate_speed(self,luck_factor: int ,pos="pos"):
         
@@ -281,7 +302,7 @@ class Pymon(Creature):
             
             if distance_elapsed_own >= self.race_range and distance_elapsed_opp >= self.race_range:
                 print(" 🟰🟰 It's a tie! ")
-                status_race  ="tie"
+                status_race  ="tie"        
                 break
             
             
@@ -298,16 +319,32 @@ class Pymon(Creature):
                 status_race = "lose"
                 break
         
-        return status_race
-        
+        histroy_record  =  History(datetime.datetime.now().strftime("%d/%m/%Y %I:%M%p"),opp.name,status_race)
+        histroy_record_opp =  History(datetime.datetime.now().strftime("%d/%m/%Y %I:%M%p"),self._name,self.status_opps[status_race])
+        self.stats.append(histroy_record)
+        opp.stats.append(histroy_record_opp)
+        self.pogo_stick = False # pogo stick effect done 
 
-            
-        
+        return status_race
+    
     
     def express_inventory(self):
         
         items_connect =  ",".join([item.name for item in self.inventory])
         print("You are carrying :",items_connect)
+        
+        
+    def search_inventory(self,name:str):
+        
+        itemObj = None
+        for item in self.inventory:
+            if item.name ==  name:
+                itemObj =  item
+                break 
+        return itemObj
+
+    def pick_item(self,obj : Item):
+        self.inventory.append(obj)
     
     
     def use_apple(self):
@@ -315,8 +352,11 @@ class Pymon(Creature):
         if self._energy_count <  3:
             self._energy_count +=  1
         
+        print(" I ate apple, it is so delecious !!")
+        
     def use_pogo_stick(self):
         self.pogo_stick = True 
+        print("Pogo stick consumed !!")
         
     
     def use_binocular(self):
@@ -333,57 +373,62 @@ class Pymon(Creature):
                     self._current_location.express_creatures()
                     self._current_location.express_items()
                     self._current_location.express_location()
+                
+                
                     
                 loc =  self._current_location.doors.get(direction)
-                loc.express_creatures()
-                loc.express_items()
-                loc.express_location()
+                
+                if isinstance(loc,Location):
+                        
+                    loc.express_creatures()
+                    loc.express_items()
+                    loc.express_location()
+                else:
+                    raise InvalidDirectionException("this directin is not accessible !")
                   
         except InvalidDirectionException as e:
             print(e)
         
-    
-    def search_creature(self,name):
-        Cobj  = None 
-        for c in self._current_location.creatures:
-            if c.name ==  name:
-                Cobj =  c
-                break 
-        return Cobj
-    
-    def search_item(self,name:str):
-        
-        itemObj = None
-        for item in self.inventory:
-            if item.name ==  name:
-                itemObj =  item
-                break 
-        return itemObj
-            
-    
+
     def challenge_to_race(self,name :str ):
         
         status_race  = None 
         
         if len(self._current_location.creatures) > 0 :
             
-            cObj =  self.search_creature(name)
+            cObj =  self._current_location.search_creature(name)
             if cObj != None  and cObj.normal == False:
                 print("Creature challenged !")
                 status_race =  self.race(cObj)
                 return status_race
             else:
                 print(f"Cant challenge this creature : {name} !! ")
+    
+    def display_history(self):
+        
+        final_text =  f"Pymon Nickname :{self._name}\n "
+        if self.stats:
+            for idx , h in enumerate(self.stats):
+                final_text += f"\nRace {idx +1 }, {h.time} Opponent : '{h.opp}', {h.status}"
+            
+            print(final_text)
+            open("race_stats.txt","w").write(final_text)
+            print("rac_stats.txt generated !!, view your history there ")
+        else:
+            print("You have Done No match yet ...")
+            
             
             
 
 class InvalidDirectionException(Exception):
     def __init__(self,msg ):
+        super().__init__(msg)
         self.msg = msg 
 
 
 class InvalidInputFileFormat(Exception):
     def __init__(self,msg ):
+        super().__init__(msg)
         self.msg = msg 
 
 def file_loader(filename):
@@ -437,7 +482,10 @@ class Record:
     def place_creature(self,name,location):
         
         if name in self.creatures.keys() and location in self.locations.keys():
-            self.locations[location].add_creature(self.creatures[name])
+            loc_obj = self.locations[location]
+            creature = self.creatures[name]
+            creature._location = loc_obj  
+            loc_obj.add_creature(creature)
         else:
             print(f"Either name : {name} ||  Location : {location} not found ")
     
@@ -459,8 +507,13 @@ class Record:
 
 
 
+## for history 
     
-        
+class History:
+    def __init__(self,time,opp,status):
+        self.time = time 
+        self.opp =  opp 
+        self.status =  status    
         
 
         
@@ -468,8 +521,7 @@ class Operations:
     def __init__(self):
         
         self.R = Record()
-        ls =  self.R.locations
-        self.curr_loc = ls[list(ls.keys())[generate_random_number(0, len(ls) - 1)]]
+        self.curr_loc = choose_random(self.R.locations)
         
         self.current_pymon =  None 
         self.my_pymons = []
@@ -491,6 +543,7 @@ class Operations:
         self.R.place_item("Playground","pogo stick")
         self.R.place_item("Beach","apple")
         self.R.place_item("School","binocular")
+    
         
     
     def check_energy_status(self):
@@ -501,7 +554,7 @@ class Operations:
                 
                 self.my_pymons.remove(c)
                 
-                random_loc =  random.choice(list(self.R.locations.values()))
+                random_loc =  choose_random(self.R.locations)
                 random_loc.creatures.append(c)
                 if self.my_pymons:
                     self.current_pymon = random.choice(self.my_pymons)   
@@ -524,7 +577,7 @@ class Operations:
             "binocular":self.current_pymon.use_binocular
         }
         name = item
-        itemObj =  self.current_pymon.search_item(name)
+        itemObj =  self.current_pymon.search_inventory(name)
         if itemObj != None and name in items_fxs.keys() :
             items_fxs[name]()
             self.current_pymon.inventory.remove(itemObj)
@@ -579,6 +632,7 @@ class Operations:
             "Pick an item",
             "View Inventory",
             "Challenge a Creature ",
+            "Generate Stats",
             "Exit the program "
         ]
         print("Please issue a command to your Pymon :")
@@ -639,11 +693,15 @@ class Operations:
                         
                         if status_race == "win":
 
-                            cObJ = self.current_pymon.search_creature(creature_name) # remove creature from location 
+                            cObJ = self.curr_loc.search_creature(creature_name) # remove creature from location 
                             self.curr_loc.creatures.remove(cObJ) # and append it to our pet list 
                             self.my_pymons.append(cObJ)
                             print(f"You have Captured  {creature_name} !!")
                         self.check_energy_status()  
+                
+                elif user_input ==  7 :
+                    self.current_pymon.display_history()
+                    
                 
                 elif user_input == int(len(user_manuals)) :
                     print("Exiting the Game !!")
@@ -659,8 +717,3 @@ if __name__ == "__main__":
     O = Operations()
     O.initial_setup()
     O.start_game()
-
-
-
-
-
