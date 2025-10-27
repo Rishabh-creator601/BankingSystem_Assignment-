@@ -128,6 +128,10 @@ class Creature:
     def name(self):
         return self.__name
     
+    @location.setter
+    def location(self,new_loc):
+        self.__location = new_loc
+    
   
 # class for pymon   
 class Pymon(Creature):
@@ -517,7 +521,7 @@ class Record:
         loc_obj = self.search_location(location)
         
         if creature!= None and loc_obj != None :
-            creature._location = loc_obj  
+            creature.location = loc_obj  
             loc_obj.add_creature(creature)
         else:
             print(f"Either name : {name} ||  Location : {location} not found ")
