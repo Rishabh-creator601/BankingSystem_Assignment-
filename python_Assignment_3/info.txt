@@ -1,7 +1,13 @@
 
 
 1) problem using race dynamics and performance metrics such as distance, speed, and time
-2)  Pymon’s references and related elements with race-oriented terminology and entities.
+2)  Problem in randomizing location and making it a dynamic map
+
+
+3)  Pymon’s references and related elements with race-oriented terminology and entities.
+4) Analyzing Energy Decay and Recovery Patterns During Consecutive Races
+5) Impact of Randomized Luck Factors on Pymon Speed Distribution
+6)  Optimization of Race Strategies Based on Items  Usage and Energy Levels
 
 
 

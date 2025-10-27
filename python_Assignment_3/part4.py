@@ -15,17 +15,15 @@ import random, csv ,sys ,time,datetime
 
 
 
-#you may use, extend and modify the following random generator
+
 def generate_random_number(min =0, max_number = 1):
     r = random.randint(min,max_number)
     return r 
 
 
-def choose_random(dict_ : dict ):
+def choose_random(list :  list ):
     
-    return dict_[random.choice(list(dict_.keys()))]
-
-
+    return random.choice(list)
 
 # functionality for reading csv file 
 def read_csv(filename):
@@ -49,7 +47,7 @@ class Item:
                  
 class Location:
     def __init__(self, name = "New room",desc=None, w = None, n = None , e = None, s = None):
-        self._name = name
+        self.__name = name
         self.desc = desc 
         self.doors = {"west":w,"east":e,"north":n,"south":s}
         self.creatures = []
@@ -59,7 +57,7 @@ class Location:
         self.creatures.append(creature)
     
     def __repr__(self):
-        return f"Location(<{self._name}>)"
+        return f"Location(<{self.__name}>)"
     
     def add_item(self, item):
         self.items.append(item)
@@ -86,19 +84,18 @@ class Location:
       
     @property    # getter 
     def name(self):
-        return self._name
+        return self.__name
     
     @name.setter # setter 
     def name(self,new_name):
-        self._name = new_name
+        self.__name = new_name
     
     
     def express_location(self):
-        print(f"You are at {self._name} , {self.desc} ")
+        print(f"You are at {self.__name} , {self.desc} ")
     
     
     def express_creatures(self):
-        
         for c in self.creatures:
             print(f"Hi player I am {c.name},{c.desc}")
     
@@ -110,40 +107,40 @@ class Location:
         for j in self.items:
             if j.pickable.strip() == "yes":
                 print(f"Hi player , I am {j.name} ,{j.desc} ")
+                
+                
+    def search_(self,list : list,name:  str ):
+        itemObj = None
+        for item in list:
+            if item.name ==  name:
+                itemObj =  item
+                break 
+        return itemObj
     
     def search_creature(self,name : str):
-        obj = None
-        for c in self.creatures:
-            if c.name == name :
-                obj =  c
-                break
-        return obj 
+        return self.search_(self.creatures,name)
     
-    def search_item(self,name : str):
-        obj = None
-        for c in self.items:
-            if c.name == name :
-                obj =  c
-                break
-        return obj 
+    def search_item(self,name : str):       
+        return self.search_(self.items,name)
+
         
         
         
 
 class Creature:
     def __init__(self,name,desc,location):
-        self._name = name
+        self.__name = name
         self.desc =  desc
-        self._location  = location
+        self.__location  = location
         self.normal = False 
     
     @property
     def location(self):
-        return self._location
+        return self.__location
     
     @property 
     def name(self):
-        return self._name
+        return self.__name
     
     
 class Pymon(Creature):
@@ -200,7 +197,7 @@ class Pymon(Creature):
         return self._current_location
     
     def __repr__(self):
-        return f"Pymon(<{self._name}>)"
+        return f"Pymon(<{self.name}>)"
     
     @property
     def speed(self):
@@ -219,7 +216,7 @@ class Pymon(Creature):
         self._energy_count =  new_count
     
     def express_urself(self):
-        print(f"My name is {self._name}, I am a {self.desc} ,My energy level is  {self._energy_count}/{self.total_energy_count}")
+        print(f"My name is {self.name}, I am a {self.desc} ,My energy level is  {self._energy_count}/{self.total_energy_count}")
 
     
     def calculate_speed(self,luck_factor: int ,pos="pos"):
@@ -246,20 +243,13 @@ class Pymon(Creature):
         
         luck =  random.choice(["neg","pos"])
         luck_factor =  generate_random_number(self.min_luck_factor,self.max_luck_factor)
-        if luck  == "pos":
-            
-            instant_speed = self.calculate_speed(luck_factor,luck)
-        else:
-            instant_speed = self.calculate_speed(luck_factor,luck)
+        instant_speed = self.calculate_speed(luck_factor,luck)
         return instant_speed
-        
-
-            
-        
+    
     def race(self,opp):
         
         
-        print(f"\n🏁 Race started between {self._name} and {opp.name}!\n")
+        print(f"\n🏁 Race started between {self.name} and {opp.name}!\n")
         if self.pogo_stick == True :
             print("Using Pogo stick !!!!")
         
@@ -296,7 +286,7 @@ class Pymon(Creature):
         
             
             
-            print(f"\n {self._name} (your Pymon) hopped {distance :.2f} meters. Distance remaining for {self._name}: {remaining_own :.2f}  meters")
+            print(f"\n {self.name} (your Pymon) hopped {distance :.2f} meters. Distance remaining for {self.name}: {remaining_own :.2f}  meters")
             print(f"{opp.name} (your Pymon) hopped {distance_opp :.2f} meters. Distance remaining for {opp.name}: {remaining_opp:.2f}meters \n")
             
             
@@ -307,20 +297,20 @@ class Pymon(Creature):
             
             
             elif distance_elapsed_own >= self.race_range:
-                print(f"😎😎 {self._name} wins the race!")
-                print(f"{self._name} Finishes the race first  in {time.time() - start:.2f} seconds !!")
+                print(f"😎 😎 {self.name} wins the race!")
+                print(f"{self.name} Finishes the race first  in {time.time() - start:.2f} seconds !!")
                 status_race =  "win"
                 break
             
             elif distance_elapsed_opp >= self.race_range:
-                print(f"☹️😔 {opp.name} wins the race!")
+                print(f"☹️ 😔 {opp.name} wins the race!")
                 self._energy_count -= 1 
                 print(f"{opp.name} finishes the race first  in {time.time() - start:.2f} seconds !! You lose ")
                 status_race = "lose"
                 break
         
         histroy_record  =  History(datetime.datetime.now().strftime("%d/%m/%Y %I:%M%p"),opp.name,status_race)
-        histroy_record_opp =  History(datetime.datetime.now().strftime("%d/%m/%Y %I:%M%p"),self._name,self.status_opps[status_race])
+        histroy_record_opp =  History(datetime.datetime.now().strftime("%d/%m/%Y %I:%M%p"),self.name,self.status_opps[status_race])
         self.stats.append(histroy_record)
         opp.stats.append(histroy_record_opp)
         self.pogo_stick = False # pogo stick effect done 
@@ -384,7 +374,7 @@ class Pymon(Creature):
                     loc.express_items()
                     loc.express_location()
                 else:
-                    raise InvalidDirectionException("this directin is not accessible !")
+                    raise InvalidDirectionException("this direction is not accessible !")
                   
         except InvalidDirectionException as e:
             print(e)
@@ -406,7 +396,7 @@ class Pymon(Creature):
     
     def display_history(self):
         
-        final_text =  f"Pymon Nickname :{self._name}\n "
+        final_text =  f"Pymon Nickname :{self.name}\n "
         if self.stats:
             for idx , h in enumerate(self.stats):
                 final_text += f"\nRace {idx +1 }, {h.time} Opponent : '{h.opp}', {h.status}"
@@ -416,9 +406,7 @@ class Pymon(Creature):
             print("rac_stats.txt generated !!, view your history there ")
         else:
             print("You have Done No match yet ...")
-            
-            
-            
+               
 
 class InvalidDirectionException(Exception):
     def __init__(self,msg ):
@@ -443,35 +431,51 @@ def file_loader(filename):
 
 class Record:
     def __init__(self):
-        locations_csv  = file_loader("locations.csv")
-        creatures_csv  =file_loader("creatures.csv")
-        items_csv = file_loader("items.csv")
-        self.locations = {}
-        self.creatures = {}
+
+        self.locations = []
+        self.creatures = []
         self.item_list = []
-        
+     
     
+    def load_files(self,location_filename,creatures_filename,items_filename):
+        
+        locations_csv  = file_loader(location_filename)
+        creatures_csv  =file_loader(creatures_filename)
+        items_csv = file_loader(items_filename)
+        
         for location in locations_csv :
             name, desc, west , north, east, south =  location
-            self.locations[name] =  Location(name=name,desc=desc,w=west,n=north,s=south,e=east)
+            self.locations.append(Location(name=name,desc=desc,w=west,n=north,s=south,e=east))
     
             
         for creature in creatures_csv:
             name,desc,adoptable,speed =  creature
             normal =  True if adoptable.strip() == "no" else False
-            self.creatures[name] = Pymon(name,desc=desc,location=None)
-            self.creatures[name].speed =  float(speed) 
-            self.creatures[name].normal = normal
+            pymon_ = Pymon(name,desc=desc,location=None)
+            pymon_.speed = float(speed)
+            pymon_.normal =  normal
+            self.creatures.append(pymon_)
+
         
         for item in items_csv:
-            self.item_list.append(Item(item[0],item[1],item[2],item[3]) )   
+            self.item_list.append(Item(item[0],item[1],item[2],item[3]) )  
+
+    
     
     # fx for connecting location to a direction 
-    def connect_loc(self,loc1,loc2,direction):
+    def connect_loc(self,loc1_,loc2_,direction):
+        
+        opposite = {"north": "south", "south": "north", "east": "west", "west": "east"}
+        
+        loc1 =  self.search_location(loc1_)
+        loc2 =  self.search_location(loc2_)
+        
+        #print("LOCATION 1 :",loc1,"Location 2 :",loc2)
         
         try :
-            if loc1 in self.locations.keys() and loc2 in self.locations.keys():
-                self.locations[loc1].connect(direction=direction,location=self.locations[loc2])
+            if loc1 != None  and loc2 != None:
+                loc1.connect(direction=direction,location=loc2)
+                loc2.connect(direction=opposite[direction],location=loc1)
             else:
                 raise InvalidDirectionException(f"Invalid direction: {direction}")
         except InvalidDirectionException as e:
@@ -480,10 +484,10 @@ class Record:
     
     # fx for placing creature to a location 
     def place_creature(self,name,location):
+        creature = self.search_creature(name)
+        loc_obj = self.search_location(location)
         
-        if name in self.creatures.keys() and location in self.locations.keys():
-            loc_obj = self.locations[location]
-            creature = self.creatures[name]
+        if creature!= None and loc_obj != None :
             creature._location = loc_obj  
             loc_obj.add_creature(creature)
         else:
@@ -492,21 +496,29 @@ class Record:
     
     def place_item(self,loc_name,item_name):
         
-        if loc_name in self.locations.keys() and self.search_item(item_name) != None :
-            self.locations[loc_name].add_item(self.search_item(item_name))
+        item_ = self.search_item(item_name)
+        loc_ = self.search_location(loc_name)
+        
+        if item_ != None and loc_ != None :
+            loc_.add_item(item_)
             
     def search_item(self,name:str):
-        
+        return self.search_(self.item_list,name)
+    
+    def search_creature(self,name : str ):
+        return self.search_(self.creatures,name)
+    
+    def search_location(self,name : str):
+        return self.search_(self.locations,name)
+    
+    def search_(self,list : list,name:  str ):
         itemObj = None
-        for item in self.item_list:
+        for item in list:
             if item.name ==  name:
                 itemObj =  item
                 break 
         return itemObj
-    
-
-
-
+        
 ## for history 
     
 class History:
@@ -518,9 +530,9 @@ class History:
 
         
 class Operations:
-    def __init__(self):
+    def __init__(self,Record_class : Record):
         
-        self.R = Record()
+        self.R = Record_class
         self.curr_loc = choose_random(self.R.locations)
         
         self.current_pymon =  None 
@@ -530,21 +542,18 @@ class Operations:
 
         self.R.connect_loc("Playground","School","west")
         self.R.connect_loc("Playground","Beach","north")
-        self.R.connect_loc("Beach","Playground","south")
+        self.R.connect_loc("Forrest","Cave","east")
         
         self.current_pymon  =  Pymon("Toromon","a white and yellow Pymon with a square face",self.curr_loc)
         self.my_pymons.append(self.current_pymon)
-        
-        self.R.place_creature("Kitimon","Playground")
-        self.R.place_creature("Sheep","Beach")
-        self.R.place_creature("Marimon","School")
-        
-        self.R.place_item("Playground","tree")
-        self.R.place_item("Playground","pogo stick")
-        self.R.place_item("Beach","apple")
-        self.R.place_item("School","binocular")
     
         
+        for c in self.R.creatures:
+            self.R.place_creature(c.name,choose_random(self.R.locations).name)
+               
+        for i in self.R.item_list:
+            self.R.place_item(choose_random(self.R.locations).name,i.name)
+
     
     def check_energy_status(self):
         
@@ -604,7 +613,8 @@ class Operations:
                 for idx,c in enumerate(self.my_pymons):
                     print(f"{idx + 1})  {c.name}")
                 
-                py_input =  input("Enter name of pymon to use :")
+                py_input =  input("Enter name of pymon to use :").lower().capitalize()
+                
                 
                 for idx,c in enumerate(self.my_pymons):
                     if c.name ==  py_input:
@@ -617,7 +627,36 @@ class Operations:
         except ValueError:
             print("Please enter valid command !!")
     
+    
+    def admin_block(self):
         
+        print("Admin Options :\n 1. Add Custom Creature \n 2. Add Custom Location ")
+        print("Type cmd number for adding custom features !!")
+        verify_input  =  input("Enter 'admin' to proceed further..")
+        if verify_input == "admin":
+            
+            cmd =  int(input("(admin block) Enter your command : "))
+            if cmd == 1:
+                print("Creature format :  name, desc,adoptable(yes/no)")
+                creature = input("Enter Creature details :").split(",")
+                if len(creature) == 3:
+                    new_creature =  Pymon(creature[0],creature[1],creature[2])
+                    self.R.creatures.append(new_creature)
+                    new_creature.express_urself()
+                
+            
+            elif cmd  ==  2:
+                print("Location format : name,description,west,north,east,south ")
+                location = input("Enter Location details :").split(",")
+                if len(location) ==  6:
+                    new_location  =  Location(*location)
+                    self.R.locations.append(new_location)
+                    new_location.express_location()
+            else:
+                pass
+        else:
+            print("You are not allowed to enter admin block")
+
     def start_game(self):
         print("Welcome to Pymon World\n")
         print("It's just you and your loyal Pymon roaming around to find more Pymons to capture and adopt.\n")
@@ -633,6 +672,7 @@ class Operations:
             "View Inventory",
             "Challenge a Creature ",
             "Generate Stats",
+            "Admin Panel",
             "Exit the program "
         ]
         print("Please issue a command to your Pymon :")
@@ -665,7 +705,7 @@ class Operations:
                     if len(self.curr_loc.items) > 0:
                         self.curr_loc.express_items()
                         
-                        item_input =  input("Picking what :")
+                        item_input =  input("Picking what :").lower()
                         itemObj =  self.R.search_item(item_input)
                         if itemObj != None:
                             self.current_pymon.pick_item(itemObj)
@@ -684,12 +724,10 @@ class Operations:
                     
                 
                 elif user_input == 6:
-                    creature_name =  input("Challenge who ? ")
+                    creature_name =  input("Challenge who ? ").lower().capitalize()
                     
-                    if creature_name != None and isinstance(creature_name,str) and creature_name != "":
+                    if self.curr_loc.search_creature(creature_name) != None:
                         status_race  =  self.current_pymon.challenge_to_race(creature_name)
-                        
-                        print("status race ",status_race)
                         
                         if status_race == "win":
 
@@ -701,6 +739,9 @@ class Operations:
                 
                 elif user_input ==  7 :
                     self.current_pymon.display_history()
+                
+                elif user_input == 8 :
+                    self.admin_block()
                     
                 
                 elif user_input == int(len(user_manuals)) :
@@ -711,9 +752,29 @@ class Operations:
                 pass 
         
         
-
+## randomized connected locations 
+## save and load game progress 
 
 if __name__ == "__main__":
-    O = Operations()
+    
+    
+    loc_file = "locations.csv"
+    creat_file = "creatures.csv"
+    item_file = "items.csv"
+
+
+    args = sys.argv[1:]
+    if len(args) >= 1:
+        loc_file = args[0]
+    if len(args) >= 2:
+        creat_file = args[1]
+    if len(args) >= 3:
+        item_file = args[2]
+
+    # Create record object and load data
+    record = Record()
+    record.load_files(loc_file, creat_file, item_file)
+
+    O = Operations(record)
     O.initial_setup()
     O.start_game()
